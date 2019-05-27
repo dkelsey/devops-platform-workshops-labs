@@ -31,3 +31,10 @@ oc create should pretty much nly be used to create things the first time, apply 
 __if you have parameters that are needed in the object__ oc process and template and pipe into apply
 
 `oc process -f foo.yml -p foo=bar | oc apply -f .`
+
+## About Helm
+
+Helm overlaps with openshift templates. It's the official package manager for Kubernetes but it is not just a template. Helm appears to be more of codefied engine to produce components. Think of a codefied install wizard + manage the full lifecycle of your application. 
+
+
+In the openshift context, we can use Helm to process templates.

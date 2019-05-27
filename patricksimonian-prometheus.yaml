@@ -1,0 +1,321 @@
+---
+# Source: prometheus/templates/server-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    component: "patricksimonian-prometheus"
+    app: prometheus
+    release: patricksimonian-prometheus
+    chart: prometheus-8.11.4
+    heritage: Tiller
+  name: patricksimonian-prometheus-patricksimonian-prometheus
+data:
+  alerts: |
+    {}
+    
+  prometheus.yml: |
+    global:
+      evaluation_interval: 1m
+      scrape_interval: 1m
+      scrape_timeout: 10s
+    rule_files:
+    - /etc/config/rules
+    - /etc/config/alerts
+    scrape_configs:
+    - job_name: prometheus
+      static_configs:
+      - targets:
+        - localhost:9090
+    - job_name: kubernetes-pods
+      kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+            names:
+              - s4g19x-patricksimonian-openshift201-may2019-dev
+      relabel_configs:
+      - action: keep
+        regex: true
+        source_labels:
+        - __meta_kubernetes_pod_annotation_prometheus_io_scrape
+      - action: replace
+        regex: (.+)
+        source_labels:
+        - __meta_kubernetes_pod_annotation_prometheus_io_path
+        target_label: __metrics_path__
+      - action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        source_labels:
+        - __address__
+        - __meta_kubernetes_pod_annotation_prometheus_io_port
+        target_label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+      - action: replace
+        source_labels:
+        - __meta_kubernetes_namespace
+        target_label: kubernetes_namespace
+      - action: replace
+        source_labels:
+        - __meta_kubernetes_pod_name
+        target_label: kubernetes_pod_name
+  rules: |
+    {}
+    
+---
+# Source: prometheus/templates/server-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    component: "patricksimonian-prometheus"
+    app: prometheus
+    release: patricksimonian-prometheus
+    chart: prometheus-8.11.4
+    heritage: Tiller
+  name: patricksimonian-prometheus-patricksimonian-prometheus
+spec:
+  accessModes:
+    - ReadWriteOnce
+    
+  resources:
+    requests:
+      storage: "1Gi"
+---
+# Source: prometheus/templates/server-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    component: "patricksimonian-prometheus"
+    app: prometheus
+    release: patricksimonian-prometheus
+    chart: prometheus-8.11.4
+    heritage: Tiller
+  name: patricksimonian-prometheus-patricksimonian-prometheus
+spec:
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 9090
+  selector:
+    component: "patricksimonian-prometheus"
+    app: prometheus
+    release: patricksimonian-prometheus
+  type: "ClusterIP"
+
+---
+# Source: prometheus/templates/server-deployment.yaml
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    component: "patricksimonian-prometheus"
+    app: prometheus
+    release: patricksimonian-prometheus
+    chart: prometheus-8.11.4
+    heritage: Tiller
+  name: patricksimonian-prometheus-patricksimonian-prometheus
+spec:
+  selector:
+    matchLabels:
+      component: "patricksimonian-prometheus"
+      app: prometheus
+      release: patricksimonian-prometheus
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: "patricksimonian-prometheus"
+        app: prometheus
+        release: patricksimonian-prometheus
+        chart: prometheus-8.11.4
+        heritage: Tiller
+    spec:
+      serviceAccountName: default
+      # initContainers:
+      # - name: "init-chown-data"
+      #   image: "busybox:latest"
+      #   imagePullPolicy: "IfNotPresent"
+      #   resources:
+      #     {}
+          
+      #   # 65534 is the nobody user that prometheus uses.
+      #   command: ["chown", "-R", "65534:65534", "/data"]
+      #   volumeMounts:
+      #   - name: storage-volume
+      #     mountPath: /data
+      #     subPath: ""
+      containers:
+        - name: prometheus-patricksimonian-prometheus-configmap-reload
+          image: "jimmidyson/configmap-reload:v0.2.2"
+          imagePullPolicy: "IfNotPresent"
+          args:
+            - --volume-dir=/etc/config
+            - --webhook-url=http://127.0.0.1:9090/-/reload
+          resources:
+            {}
+            
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/config
+              readOnly: true
+
+        - name: prometheus-patricksimonian-prometheus
+          image: "prom/prometheus:v2.9.2"
+          imagePullPolicy: "IfNotPresent"
+          args:
+            - --config.file=/etc/config/prometheus.yml
+            - --storage.tsdb.path=/data
+            - --web.console.libraries=/etc/prometheus/console_libraries
+            - --web.console.templates=/etc/prometheus/consoles
+            - --web.enable-lifecycle
+          ports:
+            - containerPort: 9090
+          readinessProbe:
+            httpGet:
+              path: /-/ready
+              port: 9090
+            initialDelaySeconds: 30
+            timeoutSeconds: 30
+          livenessProbe:
+            httpGet:
+              path: /-/healthy
+              port: 9090
+            initialDelaySeconds: 30
+            timeoutSeconds: 30
+          resources:
+            {}
+            
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/config
+            - name: storage-volume
+              mountPath: /data
+              subPath: ""
+      terminationGracePeriodSeconds: 300
+      volumes:
+        - name: config-volume
+          configMap:
+            name: patricksimonian-prometheus-patricksimonian-prometheus
+        - name: storage-volume
+          persistentVolumeClaim:
+            claimName: patricksimonian-prometheus-patricksimonian-prometheus
+---
+# Source: prometheus/templates/alertmanager-configmap.yaml
+
+---
+# Source: prometheus/templates/alertmanager-deployment.yaml
+
+
+---
+# Source: prometheus/templates/alertmanager-ingress.yaml
+
+---
+# Source: prometheus/templates/alertmanager-networkpolicy.yaml
+
+---
+# Source: prometheus/templates/alertmanager-pvc.yaml
+
+---
+# Source: prometheus/templates/alertmanager-service-headless.yaml
+
+
+---
+# Source: prometheus/templates/alertmanager-service.yaml
+
+
+---
+# Source: prometheus/templates/alertmanager-serviceaccount.yaml
+
+---
+# Source: prometheus/templates/alertmanager-statefulset.yaml
+
+
+---
+# Source: prometheus/templates/kube-state-metrics-clusterrole.yaml
+
+
+---
+# Source: prometheus/templates/kube-state-metrics-clusterrolebinding.yaml
+
+---
+# Source: prometheus/templates/kube-state-metrics-deployment.yaml
+
+
+---
+# Source: prometheus/templates/kube-state-metrics-networkpolicy.yaml
+
+---
+# Source: prometheus/templates/kube-state-metrics-serviceaccount.yaml
+
+---
+# Source: prometheus/templates/kube-state-metrics-svc.yaml
+
+
+---
+# Source: prometheus/templates/node-exporter-daemonset.yaml
+
+---
+# Source: prometheus/templates/node-exporter-podsecuritypolicy.yaml
+
+
+---
+# Source: prometheus/templates/node-exporter-role.yaml
+
+
+---
+# Source: prometheus/templates/node-exporter-rolebinding.yaml
+
+
+---
+# Source: prometheus/templates/node-exporter-service.yaml
+
+---
+# Source: prometheus/templates/node-exporter-serviceaccount.yaml
+
+---
+# Source: prometheus/templates/pushgateway-deployment.yaml
+
+
+---
+# Source: prometheus/templates/pushgateway-ingress.yaml
+
+---
+# Source: prometheus/templates/pushgateway-pvc.yaml
+
+---
+# Source: prometheus/templates/pushgateway-service.yaml
+
+
+---
+# Source: prometheus/templates/pushgateway-serviceaccount.yaml
+
+---
+# Source: prometheus/templates/server-clusterrole.yaml
+
+
+---
+# Source: prometheus/templates/server-clusterrolebinding.yaml
+
+
+---
+# Source: prometheus/templates/server-ingress.yaml
+
+---
+# Source: prometheus/templates/server-networkpolicy.yaml
+
+
+---
+# Source: prometheus/templates/server-service-headless.yaml
+
+---
+# Source: prometheus/templates/server-serviceaccount.yaml
+
+
+---
+# Source: prometheus/templates/server-statefulset.yaml
+
+
