@@ -6,6 +6,8 @@ message: |-
   The following service(s) have been created in your project: ${LOKI_SERVICE_NAME}.
   For more information about using this template, including OpenShift considerations, contact the rocketchat community.
 metadata:
+  labels:
+    app: ${LOKI_SERVICE_NAME}
   annotations:
     description: |-
       Loki Template
