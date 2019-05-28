@@ -24,8 +24,8 @@ node {
           -p LOKI_SERVICE_NAME=${LOKI_SERVICE} ROUTE_SUBDOMAIN=${ROUTE_SUBDOMAIN} \
           | oc apply -f - -n ${DEV_NAMESPACE}"
 
-      // sh "echo Wait for service to be up"
-      // openshiftVerifyService apiURL: '', authToken: '', namespace: "${DEV_NAMESPACE}", svcName: "${LOKI_SERVICE}", verbose: 'false'
+      sh "echo Wait for service to be up"
+      openshiftVerifyService apiURL: '', authToken: '', namespace: "${DEV_NAMESPACE}", svcName: "${LOKI_SERVICE}", verbose: 'false'
     }
   }
 }
