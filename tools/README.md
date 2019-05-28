@@ -17,3 +17,11 @@ Strips out:
 - metadata.resourceVersion
 - uids
 - useless openshift objects like replica sets and replication controllers
+
+
+
+## How to use
+> requires Node JS 10.15.3 or higher
+`npm install -g oc-clean-template-things`
+then
+`oc-clean-template-things --file=[path to file]
