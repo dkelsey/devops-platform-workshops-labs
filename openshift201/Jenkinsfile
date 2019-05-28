@@ -4,7 +4,8 @@
 def TOOLS_NAMESPACE = "s4g19x-shellyxuehan-openshift201-may2019-tools"
 def DEV_NAMESPACE = "s4g19x-shellyxuehan-openshift201-may2019-dev"
 def PROD_NAMESPACE = "s4g19x-shellyxuehan-openshift201-may2019-prod"
-
+def LOKI_SERVICE  = "loki"
+def ROUTE_SUBDOMAIN = 'pathfinder.gov.bc.ca'
 
 //Pipeline
 node {
@@ -14,6 +15,17 @@ node {
       sh "echo HELLO WORLD! --------------"
       sh "ls -lha openshift201/templates"
       sh "oc get projects"
+    }
+  }
+  stage ('Deploy Loki to Dev'){
+    dir ('simple_pipeline') {
+      checkout scm
+      sh "oc process -f openshift201/templates/loki_template.yaml \
+          -p LOKI_SERVICE_NAME=${LOKI_SERVICE} ROUTE_SUBDOMAIN=${ROUTE_SUBDOMAIN} \
+          | oc apply -f - -n ${DEV_NAMESPACE}"
+
+      // sh "echo Wait for service to be up"
+      // openshiftVerifyService apiURL: '', authToken: '', namespace: "${DEV_NAMESPACE}", svcName: "${LOKI_SERVICE}", verbose: 'false'
     }
   }
 }
