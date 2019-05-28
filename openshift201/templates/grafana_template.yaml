@@ -340,11 +340,6 @@ objects:
       app: ${GRAFANA_SERVICE_NAME}
     name: ${GRAFANA_SERVICE_NAME}-datasources
 parameters:
-- description: Maximum amount of memory the container can use.
-  displayName: Memory Limit
-  name: MEMORY_LIMIT
-  required: true
-  value: 512Mi
 - description: The namespace this templated is deployed into.
   displayName: Namespace
   name: NAMESPACE

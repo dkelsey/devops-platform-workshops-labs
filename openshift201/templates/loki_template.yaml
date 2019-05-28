@@ -152,15 +152,6 @@ objects:
       weight: 100
     wildcardPolicy: None
 parameters:
-- description: Maximum amount of memory the container can use.
-  displayName: Memory Limit
-  name: MEMORY_LIMIT
-  required: true
-  value: 512Mi
-- description: The namespace this templated is deployed into.
-  displayName: Namespace
-  name: NAMESPACE
-  value: openshift
 - description: The name of the Loki service to connect to.
   displayName: Loki Service Name
   name: LOKI_SERVICE_NAME

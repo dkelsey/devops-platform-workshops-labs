@@ -241,15 +241,6 @@ objects:
       requests:
         storage: "1Gi"
 parameters:
-- description: Maximum amount of memory the container can use.
-  displayName: Memory Limit
-  name: MEMORY_LIMIT
-  required: true
-  value: 512Mi
-- description: The namespace this templated is deployed into.
-  displayName: Namespace
-  name: NAMESPACE
-  value: openshift
 - description: The name of the Prometheus service to connect to.
   displayName: Prometheus Service Name
   name: PROMETHEUS_SERVICE_NAME
