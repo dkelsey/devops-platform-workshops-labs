@@ -37,9 +37,8 @@ node {
     }
   }
   stage('Deploy Loki to Prod') {
-    input {
-        message "Should we continue with deployment to PROD?"
-        ok "Yes!"
+    timeout(time: 1, unit: 'HOURS') {
+      input 'Deploy to Prod?'
     }
     dir ('simple_pipeline') {
       checkout scm
