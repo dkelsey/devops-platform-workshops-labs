@@ -16,3 +16,4 @@ Strips out:
 - metadata.namespace
 - metadata.resourceVersion
 - uids
+- useless openshift objects like replica sets and replication controllers

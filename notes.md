@@ -42,6 +42,9 @@ In the openshift context, we can use Helm to process templates.
 
 After templates are created you can run the following commands to get these apps running.
 
+When running oc get all there are some objects that we do not need for creating templates.
+
+
 
 ```
 # processing grafana template
@@ -50,16 +53,16 @@ oc process grafana-template \
     -p LOKI_SERVICE_NAME=patrick-loki \
     -p PROMETHEUS_SERVICE_NAME=patrick-prometheus \
     -p ROUTE_SUBDOMAIN=pathfinder.gov.bc.ca \
-    -p NAMESPACE=4g19x-patricksimonian-openshift201-may2019-dev 
+    -p NAMESPACE=4g19x-patricksimonian-openshift201-may2019-dev | oc apply -f -
 
 # processing loki template
 oc process loki-template \
     -p LOKI_SERVICE_NAME=patrick-loki \
     -p ROUTE_SUBDOMAIN=pathfinder.gov.bc.ca \
-    -p NAMESPACE=4g19x-patricksimonian-openshift201-may2019-dev \
+    -p NAMESPACE=4g19x-patricksimonian-openshift201-may2019-dev | oc apply -f -
 
 oc process prometheus-template \
     -p PROMETHEUS_SERVICE_NAME=patrick-loki
     -p ROUTE_SUBDOMAIN=pathfinder.gov.bc.ca \
-    -p NAMESPACE=4g19x-patricksimonian-openshift201-may2019-dev \
+    -p NAMESPACE=4g19x-patricksimonian-openshift201-may2019-dev | oc apply -f -
 ```
