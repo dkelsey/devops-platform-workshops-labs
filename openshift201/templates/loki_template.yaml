@@ -6,8 +6,6 @@ message: |-
   The following service(s) have been created in your project: ${LOKI_SERVICE_NAME}.
   For more information about using this template, including OpenShift considerations, contact the rocketchat community.
 metadata:
-  labels:
-    app: ${LOKI_SERVICE_NAME}-test-redeployment
   annotations:
     description: |-
       Loki Template
@@ -47,6 +45,7 @@ objects:
     annotations:
       deployment.kubernetes.io/revision: "1"
     labels:
+      test-redeployment: ${LOKI_SERVICE_NAME}
       app: ${LOKI_SERVICE_NAME}
       chart: loki-0.8.4
       heritage: Tiller
