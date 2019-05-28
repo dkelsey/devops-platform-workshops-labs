@@ -1,0 +1,1140 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+labels:
+  template: grafana-template
+message: |-
+  The following service(s) have been created in your project: ${GRAFANA_SERVICE_NAME}.
+  For more information about using this template, including OpenShift considerations, contact the rocketchat community.
+metadata:
+  annotations:
+    description: |-
+      Grafana Template for use in OpenShift 201 lab without persistent storage. 
+
+      WARNING: Any configuration stored will be lost upon pod destruction. ConfigMaps should be used for codified configuration. 
+    iconClass: icon-other-unknown
+    openshift.io/display-name: grafana-openshift201
+    openshift.io/documentation-url: https://github.com/bcdevops/devops-platform-workshops
+    openshift.io/long-description: This template provides a sample Grafana configuration for lab purposes.
+    openshift.io/provider-display-name: BCDevOps
+    openshift.io/support-url: https://github.com/bcdevops/
+    tags: monitoring,grafana
+  name: grafana-template
+objects:
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      kubernetes.io/limit-ranger: 'LimitRanger plugin set: cpu, memory request for
+        container ${GRAFANA_SERVICE_NAME}; cpu, memory limit for container ${GRAFANA_SERVICE_NAME}'
+      openshift.io/deployment-config.latest-version: "9"
+      openshift.io/deployment-config.name: ${GRAFANA_SERVICE_NAME}
+      openshift.io/deployment.name: ${GRAFANA_SERVICE_NAME}-9
+      openshift.io/generated-by: OpenShiftNewApp
+      openshift.io/scc: restricted
+    generateName: ${GRAFANA_SERVICE_NAME}-9-
+    labels:
+      app: ${GRAFANA_SERVICE_NAME}
+      deployment: ${GRAFANA_SERVICE_NAME}-9
+      deploymentconfig: ${GRAFANA_SERVICE_NAME}
+    name: ${GRAFANA_SERVICE_NAME}-9-plwm4
+    ownerReferences:
+    - apiVersion: v1  
+      controller: true
+      kind: ReplicationController
+      name: ${GRAFANA_SERVICE_NAME}-9
+      uid: e6aaec74-80c1-11e9-bf26-0050568379a2
+    uid: efbaa980-80c1-11e9-8dc7-0050568348cc
+  spec:
+    containers:
+    - image: grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71
+      imagePullPolicy: IfNotPresent
+      name: ${GRAFANA_SERVICE_NAME}
+      ports:
+      - containerPort: 3000
+        protocol: TCP
+      resources:
+        limits:
+          cpu: 250m
+          memory: 1Gi
+        requests:
+          cpu: 100m
+          memory: 256Mi
+      securityContext:
+        capabilities:
+          drop:
+          - KILL
+          - MKNOD
+          - SETGID
+          - SETUID
+        runAsUser: 1007540000
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /etc/grafana/provisioning/dashboards
+        name: volume-q2h0q
+      - mountPath: /var/lib/grafana/dashboards/
+        name: volume-g1a5q
+      - mountPath: /etc/grafana/provisioning/datasources/
+        name: volume-nhen1
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: default-token-82c4r
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    imagePullSecrets:
+    - name: default-dockercfg-xq5vd
+    nodeName: ociopf-p-191.dmz
+    nodeSelector:
+      region: app
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext:
+      fsGroup: 1007540000
+      seLinuxOptions:
+        level: s0:c87,c29
+    serviceAccount: default
+    serviceAccountName: default
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoSchedule
+      key: node.kubernetes.io/memory-pressure
+      operator: Exists
+    volumes:
+    - configMap:
+        defaultMode: 420
+        name: ${GRAFANA_SERVICE_NAME}-dashboard-providers
+      name: volume-q2h0q
+    - configMap:
+        defaultMode: 420
+        name: ${GRAFANA_SERVICE_NAME}-simple-dashboard
+      name: volume-g1a5q
+    - configMap:
+        defaultMode: 420
+        name: ${GRAFANA_SERVICE_NAME}-datasources
+      name: volume-nhen1
+    - name: default-token-82c4r
+      secret:
+        defaultMode: 420
+        secretName: default-token-82c4r
+- apiVersion: v1
+  kind: ReplicationController
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/original-replicas: "1"
+      openshift.io/deployer-pod.name: ${GRAFANA_SERVICE_NAME}-1-deploy
+      openshift.io/deployment-config.latest-version: "1"
+      openshift.io/deployment-config.name: ${GRAFANA_SERVICE_NAME}
+      openshift.io/deployment.phase: Complete
+      openshift.io/deployment.replicas: "1"
+      openshift.io/deployment.status-reason: config change
+      openshift.io/encoded-deployment-config: |
+        {"kind":"DeploymentConfig","apiVersion":"apps.openshift.io/v1","metadata":{"name":"${GRAFANA_SERVICE_NAME}","namespace":"s4g19x-patricksimonian-openshift201-may2019-dev","selfLink":"/apis/apps.openshift.io/v1/namespaces/s4g19x-patricksimonian-openshift201-may2019-dev/deploymentconfigs/${GRAFANA_SERVICE_NAME}","uid":"81af35b1-80ba-11e9-8dc7-0050568348cc","resourceVersion":"795166308","generation":2,"creationTimestamp":"2019-05-27T20:03:33Z","labels":{"app":"${GRAFANA_SERVICE_NAME}"},"annotations":{"openshift.io/generated-by":"OpenShiftNewApp"}},"spec":{"strategy":{"type":"Rolling","rollingParams":{"updatePeriodSeconds":1,"intervalSeconds":1,"timeoutSeconds":600,"maxUnavailable":"25%","maxSurge":"25%"},"resources":{},"activeDeadlineSeconds":21600},"triggers":[{"type":"ConfigChange"},{"type":"ImageChange","imageChangeParams":{"automatic":true,"containerNames":["${GRAFANA_SERVICE_NAME}"],"from":{"kind":"ImageStreamTag","namespace":"s4g19x-patricksimonian-openshift201-may2019-dev","name":"${GRAFANA_SERVICE_NAME}:6.2.0"},"lastTriggeredImage":"grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71"}}],"replicas":1,"revisionHistoryLimit":10,"test":false,"selector":{"app":"${GRAFANA_SERVICE_NAME}","deploymentconfig":"${GRAFANA_SERVICE_NAME}"},"template":{"metadata":{"creationTimestamp":null,"labels":{"app":"${GRAFANA_SERVICE_NAME}","deploymentconfig":"${GRAFANA_SERVICE_NAME}"},"annotations":{"openshift.io/generated-by":"OpenShiftNewApp"}},"spec":{"containers":[{"name":"${GRAFANA_SERVICE_NAME}","image":"grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71","ports":[{"containerPort":3000,"protocol":"TCP"}],"resources":{},"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File","imagePullPolicy":"IfNotPresent"}],"restartPolicy":"Always","terminationGracePeriodSeconds":30,"dnsPolicy":"ClusterFirst","securityContext":{},"schedulerName":"default-scheduler"}}},"status":{"latestVersion":1,"observedGeneration":1,"replicas":0,"updatedReplicas":0,"availableReplicas":0,"unavailableReplicas":0,"details":{"message":"config change","causes":[{"type":"ConfigChange"}]},"conditions":[{"type":"Available","status":"False","lastUpdateTime":"2019-05-27T20:03:33Z","lastTransitionTime":"2019-05-27T20:03:33Z","message":"Deployment config does not have minimum availability."}]}}
+    generation: 3
+    labels:
+      app: ${GRAFANA_SERVICE_NAME}
+      openshift.io/deployment-config.name: ${GRAFANA_SERVICE_NAME}
+    name: ${GRAFANA_SERVICE_NAME}-1
+    ownerReferences:
+    - apiVersion: apps.openshift.io/v1  
+      controller: true
+      kind: DeploymentConfig
+      name: ${GRAFANA_SERVICE_NAME}
+      uid: 81af35b1-80ba-11e9-8dc7-0050568348cc
+    uid: 82491031-80ba-11e9-bf26-0050568379a2
+  spec:
+    replicas: 0
+    selector:
+      app: ${GRAFANA_SERVICE_NAME}
+      deployment: ${GRAFANA_SERVICE_NAME}-1
+      deploymentconfig: ${GRAFANA_SERVICE_NAME}
+    template:
+      metadata:
+        annotations:
+          openshift.io/deployment-config.latest-version: "1"
+          openshift.io/deployment-config.name: ${GRAFANA_SERVICE_NAME}
+          openshift.io/deployment.name: ${GRAFANA_SERVICE_NAME}-1
+          openshift.io/generated-by: OpenShiftNewApp
+        creationTimestamp: null
+        labels:
+          app: ${GRAFANA_SERVICE_NAME}
+          deployment: ${GRAFANA_SERVICE_NAME}-1
+          deploymentconfig: ${GRAFANA_SERVICE_NAME}
+      spec:
+        containers:
+        - image: grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71
+          imagePullPolicy: IfNotPresent
+          name: ${GRAFANA_SERVICE_NAME}
+          ports:
+          - containerPort: 3000
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+- apiVersion: v1
+  kind: ReplicationController
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/original-replicas: "1"
+      openshift.io/deployer-pod.name: ${GRAFANA_SERVICE_NAME}-2-deploy
+      openshift.io/deployment-config.latest-version: "2"
+      openshift.io/deployment-config.name: ${GRAFANA_SERVICE_NAME}
+      openshift.io/deployment.phase: Complete
+      openshift.io/deployment.replicas: ""
+      openshift.io/deployment.status-reason: manual change
+      openshift.io/encoded-deployment-config: |
+        {"kind":"DeploymentConfig","apiVersion":"apps.openshift.io/v1","metadata":{"name":"${GRAFANA_SERVICE_NAME}","namespace":"s4g19x-patricksimonian-openshift201-may2019-dev","selfLink":"/apis/apps.openshift.io/v1/namespaces/s4g19x-patricksimonian-openshift201-may2019-dev/deploymentconfigs/${GRAFANA_SERVICE_NAME}","uid":"81af35b1-80ba-11e9-8dc7-0050568348cc","resourceVersion":"795204170","generation":3,"creationTimestamp":"2019-05-27T20:03:33Z","labels":{"app":"${GRAFANA_SERVICE_NAME}"},"annotations":{"openshift.io/generated-by":"OpenShiftNewApp"}},"spec":{"strategy":{"type":"Rolling","rollingParams":{"updatePeriodSeconds":1,"intervalSeconds":1,"timeoutSeconds":600,"maxUnavailable":"25%","maxSurge":"25%"},"resources":{},"activeDeadlineSeconds":21600},"triggers":[{"type":"ConfigChange"},{"type":"ImageChange","imageChangeParams":{"automatic":true,"containerNames":["${GRAFANA_SERVICE_NAME}"],"from":{"kind":"ImageStreamTag","namespace":"s4g19x-patricksimonian-openshift201-may2019-dev","name":"${GRAFANA_SERVICE_NAME}:6.2.0"},"lastTriggeredImage":"grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71"}}],"replicas":1,"revisionHistoryLimit":10,"test":false,"selector":{"app":"${GRAFANA_SERVICE_NAME}","deploymentconfig":"${GRAFANA_SERVICE_NAME}"},"template":{"metadata":{"creationTimestamp":null,"labels":{"app":"${GRAFANA_SERVICE_NAME}","deploymentconfig":"${GRAFANA_SERVICE_NAME}"},"annotations":{"openshift.io/generated-by":"OpenShiftNewApp"}},"spec":{"containers":[{"name":"${GRAFANA_SERVICE_NAME}","image":"grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71","ports":[{"containerPort":3000,"protocol":"TCP"}],"resources":{},"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File","imagePullPolicy":"IfNotPresent"}],"restartPolicy":"Always","terminationGracePeriodSeconds":30,"dnsPolicy":"ClusterFirst","securityContext":{},"schedulerName":"default-scheduler"}}},"status":{"latestVersion":2,"observedGeneration":2,"replicas":1,"updatedReplicas":1,"availableReplicas":1,"unavailableReplicas":0,"details":{"message":"manual change","causes":[{"type":"Manual"}]},"conditions":[{"type":"Available","status":"True","lastUpdateTime":"2019-05-27T20:03:57Z","lastTransitionTime":"2019-05-27T20:03:57Z","message":"Deployment config has minimum availability."},{"type":"Progressing","status":"True","lastUpdateTime":"2019-05-27T20:04:05Z","lastTransitionTime":"2019-05-27T20:04:05Z","reason":"NewReplicationControllerAvailable","message":"replication controller \"${GRAFANA_SERVICE_NAME}-1\" successfully rolled out"}],"readyReplicas":1}}
+    generation: 3
+    labels:
+      app: ${GRAFANA_SERVICE_NAME}
+      openshift.io/deployment-config.name: ${GRAFANA_SERVICE_NAME}
+    name: ${GRAFANA_SERVICE_NAME}-2
+    ownerReferences:
+    - apiVersion: apps.openshift.io/v1  
+      controller: true
+      kind: DeploymentConfig
+      name: ${GRAFANA_SERVICE_NAME}
+      uid: 81af35b1-80ba-11e9-8dc7-0050568348cc
+    uid: 4c8ff0f9-80bf-11e9-bf26-0050568379a2
+  spec:
+    replicas: 0
+    selector:
+      app: ${GRAFANA_SERVICE_NAME}
+      deployment: ${GRAFANA_SERVICE_NAME}-2
+      deploymentconfig: ${GRAFANA_SERVICE_NAME}
+    template:
+      metadata:
+        annotations:
+          openshift.io/deployment-config.latest-version: "2"
+          openshift.io/deployment-config.name: ${GRAFANA_SERVICE_NAME}
+          openshift.io/deployment.name: ${GRAFANA_SERVICE_NAME}-2
+          openshift.io/generated-by: OpenShiftNewApp
+        creationTimestamp: null
+        labels:
+          app: ${GRAFANA_SERVICE_NAME}
+          deployment: ${GRAFANA_SERVICE_NAME}-2
+          deploymentconfig: ${GRAFANA_SERVICE_NAME}
+      spec:
+        containers:
+        - image: grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71
+          imagePullPolicy: IfNotPresent
+          name: ${GRAFANA_SERVICE_NAME}
+          ports:
+          - containerPort: 3000
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+- apiVersion: v1
+  kind: ReplicationController
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/original-replicas: "1"
+      openshift.io/deployer-pod.name: ${GRAFANA_SERVICE_NAME}-3-deploy
+      openshift.io/deployment-config.latest-version: "3"
+      openshift.io/deployment-config.name: ${GRAFANA_SERVICE_NAME}
+      openshift.io/deployment.phase: Complete
+      openshift.io/deployment.replicas: ""
+      openshift.io/deployment.status-reason: config change
+      openshift.io/encoded-deployment-config: |
+        {"kind":"DeploymentConfig","apiVersion":"apps.openshift.io/v1","metadata":{"name":"${GRAFANA_SERVICE_NAME}","namespace":"s4g19x-patricksimonian-openshift201-may2019-dev","selfLink":"/apis/apps.openshift.io/v1/namespaces/s4g19x-patricksimonian-openshift201-may2019-dev/deploymentconfigs/${GRAFANA_SERVICE_NAME}","uid":"81af35b1-80ba-11e9-8dc7-0050568348cc","resourceVersion":"795206298","generation":4,"creationTimestamp":"2019-05-27T20:03:33Z","labels":{"app":"${GRAFANA_SERVICE_NAME}"},"annotations":{"openshift.io/generated-by":"OpenShiftNewApp"}},"spec":{"strategy":{"type":"Rolling","rollingParams":{"updatePeriodSeconds":1,"intervalSeconds":1,"timeoutSeconds":600,"maxUnavailable":"25%","maxSurge":"25%"},"resources":{},"activeDeadlineSeconds":21600},"triggers":[{"type":"ConfigChange"},{"type":"ImageChange","imageChangeParams":{"automatic":true,"containerNames":["${GRAFANA_SERVICE_NAME}"],"from":{"kind":"ImageStreamTag","namespace":"s4g19x-patricksimonian-openshift201-may2019-dev","name":"${GRAFANA_SERVICE_NAME}:6.2.0"},"lastTriggeredImage":"grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71"}}],"replicas":1,"revisionHistoryLimit":10,"test":false,"selector":{"app":"${GRAFANA_SERVICE_NAME}","deploymentconfig":"${GRAFANA_SERVICE_NAME}"},"template":{"metadata":{"creationTimestamp":null,"labels":{"app":"${GRAFANA_SERVICE_NAME}","deploymentconfig":"${GRAFANA_SERVICE_NAME}"},"annotations":{"openshift.io/generated-by":"OpenShiftNewApp"}},"spec":{"volumes":[{"name":"volume-q2h0q","configMap":{"name":"${GRAFANA_SERVICE_NAME}-dashboard-providers","defaultMode":420}}],"containers":[{"name":"${GRAFANA_SERVICE_NAME}","image":"grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71","ports":[{"containerPort":3000,"protocol":"TCP"}],"resources":{},"volumeMounts":[{"name":"volume-q2h0q","mountPath":"/etc/grafana/provisioning/dashboards"}],"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File","imagePullPolicy":"IfNotPresent"}],"restartPolicy":"Always","terminationGracePeriodSeconds":30,"dnsPolicy":"ClusterFirst","securityContext":{},"schedulerName":"default-scheduler"}}},"status":{"latestVersion":3,"observedGeneration":3,"replicas":1,"updatedReplicas":1,"availableReplicas":1,"unavailableReplicas":0,"details":{"message":"config change","causes":[{"type":"ConfigChange"}]},"conditions":[{"type":"Available","status":"True","lastUpdateTime":"2019-05-27T20:03:57Z","lastTransitionTime":"2019-05-27T20:03:57Z","message":"Deployment config has minimum availability."},{"type":"Progressing","status":"True","lastUpdateTime":"2019-05-27T20:38:54Z","lastTransitionTime":"2019-05-27T20:38:54Z","reason":"NewReplicationControllerAvailable","message":"replication controller \"${GRAFANA_SERVICE_NAME}-2\" successfully rolled out"}],"readyReplicas":1}}
+    generation: 3
+    labels:
+      app: ${GRAFANA_SERVICE_NAME}
+      openshift.io/deployment-config.name: ${GRAFANA_SERVICE_NAME}
+    name: ${GRAFANA_SERVICE_NAME}-3
+    ownerReferences:
+    - apiVersion: apps.openshift.io/v1  
+      controller: true
+      kind: DeploymentConfig
+      name: ${GRAFANA_SERVICE_NAME}
+      uid: 81af35b1-80ba-11e9-8dc7-0050568348cc
+    uid: 9740cdda-80bf-11e9-bf26-0050568379a2
+  spec:
+    replicas: 0
+    selector:
+      app: ${GRAFANA_SERVICE_NAME}
+      deployment: ${GRAFANA_SERVICE_NAME}-3
+      deploymentconfig: ${GRAFANA_SERVICE_NAME}
+    template:
+      metadata:
+        annotations:
+          openshift.io/deployment-config.latest-version: "3"
+          openshift.io/deployment-config.name: ${GRAFANA_SERVICE_NAME}
+          openshift.io/deployment.name: ${GRAFANA_SERVICE_NAME}-3
+          openshift.io/generated-by: OpenShiftNewApp
+        creationTimestamp: null
+        labels:
+          app: ${GRAFANA_SERVICE_NAME}
+          deployment: ${GRAFANA_SERVICE_NAME}-3
+          deploymentconfig: ${GRAFANA_SERVICE_NAME}
+      spec:
+        containers:
+        - image: grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71
+          imagePullPolicy: IfNotPresent
+          name: ${GRAFANA_SERVICE_NAME}
+          ports:
+          - containerPort: 3000
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/grafana/provisioning/dashboards
+            name: volume-q2h0q
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - configMap:
+            defaultMode: 420
+            name: ${GRAFANA_SERVICE_NAME}-dashboard-providers
+          name: volume-q2h0q
+- apiVersion: v1
+  kind: ReplicationController
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/desired-replicas: "1"
+      kubectl.kubernetes.io/update-source-id: ${GRAFANA_SERVICE_NAME}-3:9740cdda-80bf-11e9-bf26-0050568379a2
+      openshift.io/deployer-pod.name: ${GRAFANA_SERVICE_NAME}-4-deploy
+      openshift.io/deployment-config.latest-version: "4"
+      openshift.io/deployment-config.name: ${GRAFANA_SERVICE_NAME}
+      openshift.io/deployment.cancelled: "true"
+      openshift.io/deployment.phase: Failed
+      openshift.io/deployment.replicas: "0"
+      openshift.io/deployment.status-reason: newer deployment was found running
+      openshift.io/encoded-deployment-config: |
+        {"kind":"DeploymentConfig","apiVersion":"apps.openshift.io/v1","metadata":{"name":"${GRAFANA_SERVICE_NAME}","namespace":"s4g19x-patricksimonian-openshift201-may2019-dev","selfLink":"/apis/apps.openshift.io/v1/namespaces/s4g19x-patricksimonian-openshift201-may2019-dev/deploymentconfigs/${GRAFANA_SERVICE_NAME}","uid":"81af35b1-80ba-11e9-8dc7-0050568348cc","resourceVersion":"795214249","generation":5,"creationTimestamp":"2019-05-27T20:03:33Z","labels":{"app":"${GRAFANA_SERVICE_NAME}"},"annotations":{"openshift.io/generated-by":"OpenShiftNewApp"}},"spec":{"strategy":{"type":"Rolling","rollingParams":{"updatePeriodSeconds":1,"intervalSeconds":1,"timeoutSeconds":600,"maxUnavailable":"25%","maxSurge":"25%"},"resources":{},"activeDeadlineSeconds":21600},"triggers":[{"type":"ConfigChange"},{"type":"ImageChange","imageChangeParams":{"automatic":true,"containerNames":["${GRAFANA_SERVICE_NAME}"],"from":{"kind":"ImageStreamTag","namespace":"s4g19x-patricksimonian-openshift201-may2019-dev","name":"${GRAFANA_SERVICE_NAME}:6.2.0"},"lastTriggeredImage":"grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71"}}],"replicas":1,"revisionHistoryLimit":10,"test":false,"selector":{"app":"${GRAFANA_SERVICE_NAME}","deploymentconfig":"${GRAFANA_SERVICE_NAME}"},"template":{"metadata":{"creationTimestamp":null,"labels":{"app":"${GRAFANA_SERVICE_NAME}","deploymentconfig":"${GRAFANA_SERVICE_NAME}"},"annotations":{"openshift.io/generated-by":"OpenShiftNewApp"}},"spec":{"volumes":[{"name":"volume-q2h0q","configMap":{"name":"${GRAFANA_SERVICE_NAME}-dashboard-providers","defaultMode":420}},{"name":"volume-r6109","configMap":{"name":"${GRAFANA_SERVICE_NAME}-datasources","defaultMode":420}}],"containers":[{"name":"${GRAFANA_SERVICE_NAME}","image":"grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71","ports":[{"containerPort":3000,"protocol":"TCP"}],"resources":{},"volumeMounts":[{"name":"volume-q2h0q","mountPath":"/etc/grafana/provisioning/dashboards"},{"name":"volume-r6109","mountPath":"/etc/grafana/provisiniong/datasources/"}],"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File","imagePullPolicy":"IfNotPresent"}],"restartPolicy":"Always","terminationGracePeriodSeconds":30,"dnsPolicy":"ClusterFirst","securityContext":{},"schedulerName":"default-scheduler"}}},"status":{"latestVersion":4,"observedGeneration":4,"replicas":1,"updatedReplicas":1,"availableReplicas":0,"unavailableReplicas":1,"details":{"message":"config change","causes":[{"type":"ConfigChange"}]},"conditions":[{"type":"Progressing","status":"True","lastUpdateTime":"2019-05-27T20:40:31Z","lastTransitionTime":"2019-05-27T20:40:19Z","reason":"NewReplicationControllerAvailable","message":"replication controller \"${GRAFANA_SERVICE_NAME}-3\" successfully rolled out"},{"type":"Available","status":"False","lastUpdateTime":"2019-05-27T20:43:53Z","lastTransitionTime":"2019-05-27T20:43:53Z","message":"Deployment config does not have minimum availability."}]}}
+    generation: 3
+    labels:
+      app: ${GRAFANA_SERVICE_NAME}
+      openshift.io/deployment-config.name: ${GRAFANA_SERVICE_NAME}
+    name: ${GRAFANA_SERVICE_NAME}-4
+    ownerReferences:
+    - apiVersion: apps.openshift.io/v1  
+      controller: true
+      kind: DeploymentConfig
+      name: ${GRAFANA_SERVICE_NAME}
+      uid: 81af35b1-80ba-11e9-8dc7-0050568348cc
+    uid: 8a3b9e39-80c0-11e9-bf26-0050568379a2
+  spec:
+    replicas: 0
+    selector:
+      app: ${GRAFANA_SERVICE_NAME}
+      deployment: ${GRAFANA_SERVICE_NAME}-4
+      deploymentconfig: ${GRAFANA_SERVICE_NAME}
+    template:
+      metadata:
+        annotations:
+          openshift.io/deployment-config.latest-version: "4"
+          openshift.io/deployment-config.name: ${GRAFANA_SERVICE_NAME}
+          openshift.io/deployment.name: ${GRAFANA_SERVICE_NAME}-4
+          openshift.io/generated-by: OpenShiftNewApp
+        creationTimestamp: null
+        labels:
+          app: ${GRAFANA_SERVICE_NAME}
+          deployment: ${GRAFANA_SERVICE_NAME}-4
+          deploymentconfig: ${GRAFANA_SERVICE_NAME}
+      spec:
+        containers:
+        - image: grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71
+          imagePullPolicy: IfNotPresent
+          name: ${GRAFANA_SERVICE_NAME}
+          ports:
+          - containerPort: 3000
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/grafana/provisioning/dashboards
+            name: volume-q2h0q
+          - mountPath: /etc/grafana/provisiniong/datasources/
+            name: volume-r6109
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - configMap:
+            defaultMode: 420
+            name: ${GRAFANA_SERVICE_NAME}-dashboard-providers
+          name: volume-q2h0q
+        - configMap:
+            defaultMode: 420
+            name: ${GRAFANA_SERVICE_NAME}-datasources
+          name: volume-r6109
+- apiVersion: v1
+  kind: ReplicationController
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/original-replicas: "1"
+      openshift.io/deployer-pod.name: ${GRAFANA_SERVICE_NAME}-5-deploy
+      openshift.io/deployment-config.latest-version: "5"
+      openshift.io/deployment-config.name: ${GRAFANA_SERVICE_NAME}
+      openshift.io/deployment.phase: Complete
+      openshift.io/deployment.replicas: ""
+      openshift.io/deployment.status-reason: config change
+      openshift.io/encoded-deployment-config: |
+        {"kind":"DeploymentConfig","apiVersion":"apps.openshift.io/v1","metadata":{"name":"${GRAFANA_SERVICE_NAME}","namespace":"s4g19x-patricksimonian-openshift201-may2019-dev","selfLink":"/apis/apps.openshift.io/v1/namespaces/s4g19x-patricksimonian-openshift201-may2019-dev/deploymentconfigs/${GRAFANA_SERVICE_NAME}","uid":"81af35b1-80ba-11e9-8dc7-0050568348cc","resourceVersion":"795214546","generation":6,"creationTimestamp":"2019-05-27T20:03:33Z","labels":{"app":"${GRAFANA_SERVICE_NAME}"},"annotations":{"openshift.io/generated-by":"OpenShiftNewApp"}},"spec":{"strategy":{"type":"Rolling","rollingParams":{"updatePeriodSeconds":1,"intervalSeconds":1,"timeoutSeconds":600,"maxUnavailable":"25%","maxSurge":"25%"},"resources":{},"activeDeadlineSeconds":21600},"triggers":[{"type":"ConfigChange"},{"type":"ImageChange","imageChangeParams":{"automatic":true,"containerNames":["${GRAFANA_SERVICE_NAME}"],"from":{"kind":"ImageStreamTag","namespace":"s4g19x-patricksimonian-openshift201-may2019-dev","name":"${GRAFANA_SERVICE_NAME}:6.2.0"},"lastTriggeredImage":"grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71"}}],"replicas":1,"revisionHistoryLimit":10,"test":false,"selector":{"app":"${GRAFANA_SERVICE_NAME}","deploymentconfig":"${GRAFANA_SERVICE_NAME}"},"template":{"metadata":{"creationTimestamp":null,"labels":{"app":"${GRAFANA_SERVICE_NAME}","deploymentconfig":"${GRAFANA_SERVICE_NAME}"},"annotations":{"openshift.io/generated-by":"OpenShiftNewApp"}},"spec":{"volumes":[{"name":"volume-q2h0q","configMap":{"name":"${GRAFANA_SERVICE_NAME}-dashboard-providers","defaultMode":420}},{"name":"volume-r6109","configMap":{"name":"${GRAFANA_SERVICE_NAME}-datasources","defaultMode":420}},{"name":"volume-g1a5q","configMap":{"name":"${GRAFANA_SERVICE_NAME}-simple-dashboard","defaultMode":420}}],"containers":[{"name":"${GRAFANA_SERVICE_NAME}","image":"grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71","ports":[{"containerPort":3000,"protocol":"TCP"}],"resources":{},"volumeMounts":[{"name":"volume-q2h0q","mountPath":"/etc/grafana/provisioning/dashboards"},{"name":"volume-r6109","mountPath":"/etc/grafana/provisiniong/datasources/"},{"name":"volume-g1a5q","mountPath":"/var/lib/grafana/dashboards/"}],"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File","imagePullPolicy":"IfNotPresent"}],"restartPolicy":"Always","terminationGracePeriodSeconds":30,"dnsPolicy":"ClusterFirst","securityContext":{},"schedulerName":"default-scheduler"}}},"status":{"latestVersion":5,"observedGeneration":5,"replicas":2,"updatedReplicas":1,"availableReplicas":0,"unavailableReplicas":2,"details":{"message":"config change","causes":[{"type":"ConfigChange"}]},"conditions":[{"type":"Available","status":"False","lastUpdateTime":"2019-05-27T20:43:53Z","lastTransitionTime":"2019-05-27T20:43:53Z","message":"Deployment config does not have minimum availability."},{"type":"Progressing","status":"True","lastUpdateTime":"2019-05-27T20:46:53Z","lastTransitionTime":"2019-05-27T20:46:53Z","reason":"ReplicationControllerUpdated","message":"replication controller \"${GRAFANA_SERVICE_NAME}-4\" is progressing"}]}}
+    generation: 3
+    labels:
+      app: ${GRAFANA_SERVICE_NAME}
+      openshift.io/deployment-config.name: ${GRAFANA_SERVICE_NAME}
+    name: ${GRAFANA_SERVICE_NAME}-5
+    ownerReferences:
+    - apiVersion: apps.openshift.io/v1  
+      controller: true
+      kind: DeploymentConfig
+      name: ${GRAFANA_SERVICE_NAME}
+      uid: 81af35b1-80ba-11e9-8dc7-0050568348cc
+    uid: 93e490e6-80c0-11e9-bf26-0050568379a2
+  spec:
+    replicas: 0
+    selector:
+      app: ${GRAFANA_SERVICE_NAME}
+      deployment: ${GRAFANA_SERVICE_NAME}-5
+      deploymentconfig: ${GRAFANA_SERVICE_NAME}
+    template:
+      metadata:
+        annotations:
+          openshift.io/deployment-config.latest-version: "5"
+          openshift.io/deployment-config.name: ${GRAFANA_SERVICE_NAME}
+          openshift.io/deployment.name: ${GRAFANA_SERVICE_NAME}-5
+          openshift.io/generated-by: OpenShiftNewApp
+        creationTimestamp: null
+        labels:
+          app: ${GRAFANA_SERVICE_NAME}
+          deployment: ${GRAFANA_SERVICE_NAME}-5
+          deploymentconfig: ${GRAFANA_SERVICE_NAME}
+      spec:
+        containers:
+        - image: grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71
+          imagePullPolicy: IfNotPresent
+          name: ${GRAFANA_SERVICE_NAME}
+          ports:
+          - containerPort: 3000
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/grafana/provisioning/dashboards
+            name: volume-q2h0q
+          - mountPath: /etc/grafana/provisiniong/datasources/
+            name: volume-r6109
+          - mountPath: /var/lib/grafana/dashboards/
+            name: volume-g1a5q
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - configMap:
+            defaultMode: 420
+            name: ${GRAFANA_SERVICE_NAME}-dashboard-providers
+          name: volume-q2h0q
+        - configMap:
+            defaultMode: 420
+            name: ${GRAFANA_SERVICE_NAME}-datasources
+          name: volume-r6109
+        - configMap:
+            defaultMode: 420
+            name: ${GRAFANA_SERVICE_NAME}-simple-dashboard
+          name: volume-g1a5q
+- apiVersion: v1
+  kind: ReplicationController
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/original-replicas: "1"
+      openshift.io/deployer-pod.name: ${GRAFANA_SERVICE_NAME}-6-deploy
+      openshift.io/deployment-config.latest-version: "6"
+      openshift.io/deployment-config.name: ${GRAFANA_SERVICE_NAME}
+      openshift.io/deployment.phase: Complete
+      openshift.io/deployment.replicas: ""
+      openshift.io/deployment.status-reason: manual change
+      openshift.io/encoded-deployment-config: |
+        {"kind":"DeploymentConfig","apiVersion":"apps.openshift.io/v1","metadata":{"name":"${GRAFANA_SERVICE_NAME}","namespace":"s4g19x-patricksimonian-openshift201-may2019-dev","selfLink":"/apis/apps.openshift.io/v1/namespaces/s4g19x-patricksimonian-openshift201-may2019-dev/deploymentconfigs/${GRAFANA_SERVICE_NAME}","uid":"81af35b1-80ba-11e9-8dc7-0050568348cc","resourceVersion":"795218727","generation":7,"creationTimestamp":"2019-05-27T20:03:33Z","labels":{"app":"${GRAFANA_SERVICE_NAME}"},"annotations":{"openshift.io/generated-by":"OpenShiftNewApp"}},"spec":{"strategy":{"type":"Rolling","rollingParams":{"updatePeriodSeconds":1,"intervalSeconds":1,"timeoutSeconds":600,"maxUnavailable":"25%","maxSurge":"25%"},"resources":{},"activeDeadlineSeconds":21600},"triggers":[{"type":"ConfigChange"},{"type":"ImageChange","imageChangeParams":{"automatic":true,"containerNames":["${GRAFANA_SERVICE_NAME}"],"from":{"kind":"ImageStreamTag","namespace":"s4g19x-patricksimonian-openshift201-may2019-dev","name":"${GRAFANA_SERVICE_NAME}:6.2.0"},"lastTriggeredImage":"grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71"}}],"replicas":1,"revisionHistoryLimit":10,"test":false,"selector":{"app":"${GRAFANA_SERVICE_NAME}","deploymentconfig":"${GRAFANA_SERVICE_NAME}"},"template":{"metadata":{"creationTimestamp":null,"labels":{"app":"${GRAFANA_SERVICE_NAME}","deploymentconfig":"${GRAFANA_SERVICE_NAME}"},"annotations":{"openshift.io/generated-by":"OpenShiftNewApp"}},"spec":{"volumes":[{"name":"volume-q2h0q","configMap":{"name":"${GRAFANA_SERVICE_NAME}-dashboard-providers","defaultMode":420}},{"name":"volume-r6109","configMap":{"name":"${GRAFANA_SERVICE_NAME}-datasources","defaultMode":420}},{"name":"volume-g1a5q","configMap":{"name":"${GRAFANA_SERVICE_NAME}-simple-dashboard","defaultMode":420}}],"containers":[{"name":"${GRAFANA_SERVICE_NAME}","image":"grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71","ports":[{"containerPort":3000,"protocol":"TCP"}],"resources":{},"volumeMounts":[{"name":"volume-q2h0q","mountPath":"/etc/grafana/provisioning/dashboards"},{"name":"volume-r6109","mountPath":"/etc/grafana/provisiniong/datasources/"},{"name":"volume-g1a5q","mountPath":"/var/lib/grafana/dashboards/"}],"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File","imagePullPolicy":"IfNotPresent"}],"restartPolicy":"Always","terminationGracePeriodSeconds":30,"dnsPolicy":"ClusterFirst","securityContext":{},"schedulerName":"default-scheduler"}}},"status":{"latestVersion":6,"observedGeneration":6,"replicas":1,"updatedReplicas":1,"availableReplicas":1,"unavailableReplicas":0,"details":{"message":"manual change","causes":[{"type":"Manual"}]},"conditions":[{"type":"Available","status":"True","lastUpdateTime":"2019-05-27T20:47:37Z","lastTransitionTime":"2019-05-27T20:47:37Z","message":"Deployment config has minimum availability."},{"type":"Progressing","status":"True","lastUpdateTime":"2019-05-27T20:47:54Z","lastTransitionTime":"2019-05-27T20:47:38Z","reason":"NewReplicationControllerAvailable","message":"replication controller \"${GRAFANA_SERVICE_NAME}-5\" successfully rolled out"}],"readyReplicas":1}}
+    generation: 3
+    labels:
+      app: ${GRAFANA_SERVICE_NAME}
+      openshift.io/deployment-config.name: ${GRAFANA_SERVICE_NAME}
+    name: ${GRAFANA_SERVICE_NAME}-6
+    ownerReferences:
+    - apiVersion: apps.openshift.io/v1  
+      controller: true
+      kind: DeploymentConfig
+      name: ${GRAFANA_SERVICE_NAME}
+      uid: 81af35b1-80ba-11e9-8dc7-0050568348cc
+    uid: 0c6f483d-80c1-11e9-bf26-0050568379a2
+  spec:
+    replicas: 0
+    selector:
+      app: ${GRAFANA_SERVICE_NAME}
+      deployment: ${GRAFANA_SERVICE_NAME}-6
+      deploymentconfig: ${GRAFANA_SERVICE_NAME}
+    template:
+      metadata:
+        annotations:
+          openshift.io/deployment-config.latest-version: "6"
+          openshift.io/deployment-config.name: ${GRAFANA_SERVICE_NAME}
+          openshift.io/deployment.name: ${GRAFANA_SERVICE_NAME}-6
+          openshift.io/generated-by: OpenShiftNewApp
+        creationTimestamp: null
+        labels:
+          app: ${GRAFANA_SERVICE_NAME}
+          deployment: ${GRAFANA_SERVICE_NAME}-6
+          deploymentconfig: ${GRAFANA_SERVICE_NAME}
+      spec:
+        containers:
+        - image: grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71
+          imagePullPolicy: IfNotPresent
+          name: ${GRAFANA_SERVICE_NAME}
+          ports:
+          - containerPort: 3000
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/grafana/provisioning/dashboards
+            name: volume-q2h0q
+          - mountPath: /etc/grafana/provisiniong/datasources/
+            name: volume-r6109
+          - mountPath: /var/lib/grafana/dashboards/
+            name: volume-g1a5q
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - configMap:
+            defaultMode: 420
+            name: ${GRAFANA_SERVICE_NAME}-dashboard-providers
+          name: volume-q2h0q
+        - configMap:
+            defaultMode: 420
+            name: ${GRAFANA_SERVICE_NAME}-datasources
+          name: volume-r6109
+        - configMap:
+            defaultMode: 420
+            name: ${GRAFANA_SERVICE_NAME}-simple-dashboard
+          name: volume-g1a5q
+- apiVersion: v1
+  kind: ReplicationController
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/desired-replicas: "1"
+      openshift.io/deployer-pod.name: ${GRAFANA_SERVICE_NAME}-7-deploy
+      openshift.io/deployment-config.latest-version: "7"
+      openshift.io/deployment-config.name: ${GRAFANA_SERVICE_NAME}
+      openshift.io/deployment.cancelled: "true"
+      openshift.io/deployment.phase: Failed
+      openshift.io/deployment.replicas: "0"
+      openshift.io/deployment.status-reason: newer deployment was found running
+      openshift.io/encoded-deployment-config: |
+        {"kind":"DeploymentConfig","apiVersion":"apps.openshift.io/v1","metadata":{"name":"${GRAFANA_SERVICE_NAME}","namespace":"s4g19x-patricksimonian-openshift201-may2019-dev","selfLink":"/apis/apps.openshift.io/v1/namespaces/s4g19x-patricksimonian-openshift201-may2019-dev/deploymentconfigs/${GRAFANA_SERVICE_NAME}","uid":"81af35b1-80ba-11e9-8dc7-0050568348cc","resourceVersion":"795219704","generation":8,"creationTimestamp":"2019-05-27T20:03:33Z","labels":{"app":"${GRAFANA_SERVICE_NAME}"},"annotations":{"openshift.io/generated-by":"OpenShiftNewApp"}},"spec":{"strategy":{"type":"Rolling","rollingParams":{"updatePeriodSeconds":1,"intervalSeconds":1,"timeoutSeconds":600,"maxUnavailable":"25%","maxSurge":"25%"},"resources":{},"activeDeadlineSeconds":21600},"triggers":[{"type":"ConfigChange"},{"type":"ImageChange","imageChangeParams":{"automatic":true,"containerNames":["${GRAFANA_SERVICE_NAME}"],"from":{"kind":"ImageStreamTag","namespace":"s4g19x-patricksimonian-openshift201-may2019-dev","name":"${GRAFANA_SERVICE_NAME}:6.2.0"},"lastTriggeredImage":"grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71"}}],"replicas":1,"revisionHistoryLimit":10,"test":false,"selector":{"app":"${GRAFANA_SERVICE_NAME}","deploymentconfig":"${GRAFANA_SERVICE_NAME}"},"template":{"metadata":{"creationTimestamp":null,"labels":{"app":"${GRAFANA_SERVICE_NAME}","deploymentconfig":"${GRAFANA_SERVICE_NAME}"},"annotations":{"openshift.io/generated-by":"OpenShiftNewApp"}},"spec":{"volumes":[{"name":"volume-q2h0q","configMap":{"name":"${GRAFANA_SERVICE_NAME}-dashboard-providers","defaultMode":420}},{"name":"volume-g1a5q","configMap":{"name":"${GRAFANA_SERVICE_NAME}-simple-dashboard","defaultMode":420}}],"containers":[{"name":"${GRAFANA_SERVICE_NAME}","image":"grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71","ports":[{"containerPort":3000,"protocol":"TCP"}],"resources":{},"volumeMounts":[{"name":"volume-q2h0q","mountPath":"/etc/grafana/provisioning/dashboards"},{"name":"volume-g1a5q","mountPath":"/var/lib/grafana/dashboards/"}],"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File","imagePullPolicy":"IfNotPresent"}],"restartPolicy":"Always","terminationGracePeriodSeconds":30,"dnsPolicy":"ClusterFirst","securityContext":{},"schedulerName":"default-scheduler"}}},"status":{"latestVersion":7,"observedGeneration":7,"replicas":1,"updatedReplicas":1,"availableReplicas":1,"unavailableReplicas":0,"details":{"message":"config change","causes":[{"type":"ConfigChange"}]},"conditions":[{"type":"Available","status":"True","lastUpdateTime":"2019-05-27T20:47:37Z","lastTransitionTime":"2019-05-27T20:47:37Z","message":"Deployment config has minimum availability."},{"type":"Progressing","status":"True","lastUpdateTime":"2019-05-27T20:50:42Z","lastTransitionTime":"2019-05-27T20:50:39Z","reason":"NewReplicationControllerAvailable","message":"replication controller \"${GRAFANA_SERVICE_NAME}-6\" successfully rolled out"}],"readyReplicas":1}}
+    generation: 1
+    labels:
+      app: ${GRAFANA_SERVICE_NAME}
+      openshift.io/deployment-config.name: ${GRAFANA_SERVICE_NAME}
+    name: ${GRAFANA_SERVICE_NAME}-7
+    ownerReferences:
+    - apiVersion: apps.openshift.io/v1  
+      controller: true
+      kind: DeploymentConfig
+      name: ${GRAFANA_SERVICE_NAME}
+      uid: 81af35b1-80ba-11e9-8dc7-0050568348cc
+    uid: 2b5ffa15-80c1-11e9-bf26-0050568379a2
+  spec:
+    replicas: 0
+    selector:
+      app: ${GRAFANA_SERVICE_NAME}
+      deployment: ${GRAFANA_SERVICE_NAME}-7
+      deploymentconfig: ${GRAFANA_SERVICE_NAME}
+    template:
+      metadata:
+        annotations:
+          openshift.io/deployment-config.latest-version: "7"
+          openshift.io/deployment-config.name: ${GRAFANA_SERVICE_NAME}
+          openshift.io/deployment.name: ${GRAFANA_SERVICE_NAME}-7
+          openshift.io/generated-by: OpenShiftNewApp
+        creationTimestamp: null
+        labels:
+          app: ${GRAFANA_SERVICE_NAME}
+          deployment: ${GRAFANA_SERVICE_NAME}-7
+          deploymentconfig: ${GRAFANA_SERVICE_NAME}
+      spec:
+        containers:
+        - image: grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71
+          imagePullPolicy: IfNotPresent
+          name: ${GRAFANA_SERVICE_NAME}
+          ports:
+          - containerPort: 3000
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/grafana/provisioning/dashboards
+            name: volume-q2h0q
+          - mountPath: /var/lib/grafana/dashboards/
+            name: volume-g1a5q
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - configMap:
+            defaultMode: 420
+            name: ${GRAFANA_SERVICE_NAME}-dashboard-providers
+          name: volume-q2h0q
+        - configMap:
+            defaultMode: 420
+            name: ${GRAFANA_SERVICE_NAME}-simple-dashboard
+          name: volume-g1a5q
+- apiVersion: v1
+  kind: ReplicationController
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/original-replicas: "1"
+      openshift.io/deployer-pod.name: ${GRAFANA_SERVICE_NAME}-8-deploy
+      openshift.io/deployment-config.latest-version: "8"
+      openshift.io/deployment-config.name: ${GRAFANA_SERVICE_NAME}
+      openshift.io/deployment.phase: Complete
+      openshift.io/deployment.replicas: ""
+      openshift.io/deployment.status-reason: config change
+      openshift.io/encoded-deployment-config: |
+        {"kind":"DeploymentConfig","apiVersion":"apps.openshift.io/v1","metadata":{"name":"${GRAFANA_SERVICE_NAME}","namespace":"s4g19x-patricksimonian-openshift201-may2019-dev","selfLink":"/apis/apps.openshift.io/v1/namespaces/s4g19x-patricksimonian-openshift201-may2019-dev/deploymentconfigs/${GRAFANA_SERVICE_NAME}","uid":"81af35b1-80ba-11e9-8dc7-0050568348cc","resourceVersion":"795220213","generation":9,"creationTimestamp":"2019-05-27T20:03:33Z","labels":{"app":"${GRAFANA_SERVICE_NAME}"},"annotations":{"openshift.io/generated-by":"OpenShiftNewApp"}},"spec":{"strategy":{"type":"Rolling","rollingParams":{"updatePeriodSeconds":1,"intervalSeconds":1,"timeoutSeconds":600,"maxUnavailable":"25%","maxSurge":"25%"},"resources":{},"activeDeadlineSeconds":21600},"triggers":[{"type":"ConfigChange"},{"type":"ImageChange","imageChangeParams":{"automatic":true,"containerNames":["${GRAFANA_SERVICE_NAME}"],"from":{"kind":"ImageStreamTag","namespace":"s4g19x-patricksimonian-openshift201-may2019-dev","name":"${GRAFANA_SERVICE_NAME}:6.2.0"},"lastTriggeredImage":"grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71"}}],"replicas":1,"revisionHistoryLimit":10,"test":false,"selector":{"app":"${GRAFANA_SERVICE_NAME}","deploymentconfig":"${GRAFANA_SERVICE_NAME}"},"template":{"metadata":{"creationTimestamp":null,"labels":{"app":"${GRAFANA_SERVICE_NAME}","deploymentconfig":"${GRAFANA_SERVICE_NAME}"},"annotations":{"openshift.io/generated-by":"OpenShiftNewApp"}},"spec":{"volumes":[{"name":"volume-q2h0q","configMap":{"name":"${GRAFANA_SERVICE_NAME}-dashboard-providers","defaultMode":420}},{"name":"volume-g1a5q","configMap":{"name":"${GRAFANA_SERVICE_NAME}-simple-dashboard","defaultMode":420}},{"name":"volume-nhen1","configMap":{"name":"${GRAFANA_SERVICE_NAME}-datasources","defaultMode":420}}],"containers":[{"name":"${GRAFANA_SERVICE_NAME}","image":"grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71","ports":[{"containerPort":3000,"protocol":"TCP"}],"resources":{},"volumeMounts":[{"name":"volume-q2h0q","mountPath":"/etc/grafana/provisioning/dashboards"},{"name":"volume-g1a5q","mountPath":"/var/lib/grafana/dashboards/"},{"name":"volume-nhen1","mountPath":"/etc/grafana/provisioning/datasources/"}],"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File","imagePullPolicy":"IfNotPresent"}],"restartPolicy":"Always","terminationGracePeriodSeconds":30,"dnsPolicy":"ClusterFirst","securityContext":{},"schedulerName":"default-scheduler"}}},"status":{"latestVersion":8,"observedGeneration":8,"replicas":1,"updatedReplicas":0,"availableReplicas":1,"unavailableReplicas":0,"details":{"message":"config change","causes":[{"type":"ConfigChange"}]},"conditions":[{"type":"Available","status":"True","lastUpdateTime":"2019-05-27T20:47:37Z","lastTransitionTime":"2019-05-27T20:47:37Z","message":"Deployment config has minimum availability."},{"type":"Progressing","status":"Unknown","lastUpdateTime":"2019-05-27T20:51:15Z","lastTransitionTime":"2019-05-27T20:51:15Z","message":"replication controller \"${GRAFANA_SERVICE_NAME}-7\" is waiting for pod \"${GRAFANA_SERVICE_NAME}-7-deploy\" to run"}],"readyReplicas":1}}
+    generation: 3
+    labels:
+      app: ${GRAFANA_SERVICE_NAME}
+      openshift.io/deployment-config.name: ${GRAFANA_SERVICE_NAME}
+    name: ${GRAFANA_SERVICE_NAME}-8
+    ownerReferences:
+    - apiVersion: apps.openshift.io/v1  
+      controller: true
+      kind: DeploymentConfig
+      name: ${GRAFANA_SERVICE_NAME}
+      uid: 81af35b1-80ba-11e9-8dc7-0050568348cc
+    uid: 3e4f2062-80c1-11e9-bf26-0050568379a2
+  spec:
+    replicas: 0
+    selector:
+      app: ${GRAFANA_SERVICE_NAME}
+      deployment: ${GRAFANA_SERVICE_NAME}-8
+      deploymentconfig: ${GRAFANA_SERVICE_NAME}
+    template:
+      metadata:
+        annotations:
+          openshift.io/deployment-config.latest-version: "8"
+          openshift.io/deployment-config.name: ${GRAFANA_SERVICE_NAME}
+          openshift.io/deployment.name: ${GRAFANA_SERVICE_NAME}-8
+          openshift.io/generated-by: OpenShiftNewApp
+        creationTimestamp: null
+        labels:
+          app: ${GRAFANA_SERVICE_NAME}
+          deployment: ${GRAFANA_SERVICE_NAME}-8
+          deploymentconfig: ${GRAFANA_SERVICE_NAME}
+      spec:
+        containers:
+        - image: grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71
+          imagePullPolicy: IfNotPresent
+          name: ${GRAFANA_SERVICE_NAME}
+          ports:
+          - containerPort: 3000
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/grafana/provisioning/dashboards
+            name: volume-q2h0q
+          - mountPath: /var/lib/grafana/dashboards/
+            name: volume-g1a5q
+          - mountPath: /etc/grafana/provisioning/datasources/
+            name: volume-nhen1
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - configMap:
+            defaultMode: 420
+            name: ${GRAFANA_SERVICE_NAME}-dashboard-providers
+          name: volume-q2h0q
+        - configMap:
+            defaultMode: 420
+            name: ${GRAFANA_SERVICE_NAME}-simple-dashboard
+          name: volume-g1a5q
+        - configMap:
+            defaultMode: 420
+            name: ${GRAFANA_SERVICE_NAME}-datasources
+          name: volume-nhen1
+- apiVersion: v1
+  kind: ReplicationController
+  metadata:
+    annotations:
+      openshift.io/deployer-pod.name: ${GRAFANA_SERVICE_NAME}-9-deploy
+      openshift.io/deployment-config.latest-version: "9"
+      openshift.io/deployment-config.name: ${GRAFANA_SERVICE_NAME}
+      openshift.io/deployment.phase: Complete
+      openshift.io/deployment.replicas: ""
+      openshift.io/deployment.status-reason: manual change
+      openshift.io/encoded-deployment-config: |
+        {"kind":"DeploymentConfig","apiVersion":"apps.openshift.io/v1","metadata":{"name":"${GRAFANA_SERVICE_NAME}","namespace":"s4g19x-patricksimonian-openshift201-may2019-dev","selfLink":"/apis/apps.openshift.io/v1/namespaces/s4g19x-patricksimonian-openshift201-may2019-dev/deploymentconfigs/${GRAFANA_SERVICE_NAME}","uid":"81af35b1-80ba-11e9-8dc7-0050568348cc","resourceVersion":"795226227","generation":10,"creationTimestamp":"2019-05-27T20:03:33Z","labels":{"app":"${GRAFANA_SERVICE_NAME}"},"annotations":{"openshift.io/generated-by":"OpenShiftNewApp"}},"spec":{"strategy":{"type":"Rolling","rollingParams":{"updatePeriodSeconds":1,"intervalSeconds":1,"timeoutSeconds":600,"maxUnavailable":"25%","maxSurge":"25%"},"resources":{},"activeDeadlineSeconds":21600},"triggers":[{"type":"ConfigChange"},{"type":"ImageChange","imageChangeParams":{"automatic":true,"containerNames":["${GRAFANA_SERVICE_NAME}"],"from":{"kind":"ImageStreamTag","namespace":"s4g19x-patricksimonian-openshift201-may2019-dev","name":"${GRAFANA_SERVICE_NAME}:6.2.0"},"lastTriggeredImage":"grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71"}}],"replicas":1,"revisionHistoryLimit":10,"test":false,"selector":{"app":"${GRAFANA_SERVICE_NAME}","deploymentconfig":"${GRAFANA_SERVICE_NAME}"},"template":{"metadata":{"creationTimestamp":null,"labels":{"app":"${GRAFANA_SERVICE_NAME}","deploymentconfig":"${GRAFANA_SERVICE_NAME}"},"annotations":{"openshift.io/generated-by":"OpenShiftNewApp"}},"spec":{"volumes":[{"name":"volume-q2h0q","configMap":{"name":"${GRAFANA_SERVICE_NAME}-dashboard-providers","defaultMode":420}},{"name":"volume-g1a5q","configMap":{"name":"${GRAFANA_SERVICE_NAME}-simple-dashboard","defaultMode":420}},{"name":"volume-nhen1","configMap":{"name":"${GRAFANA_SERVICE_NAME}-datasources","defaultMode":420}}],"containers":[{"name":"${GRAFANA_SERVICE_NAME}","image":"grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71","ports":[{"containerPort":3000,"protocol":"TCP"}],"resources":{},"volumeMounts":[{"name":"volume-q2h0q","mountPath":"/etc/grafana/provisioning/dashboards"},{"name":"volume-g1a5q","mountPath":"/var/lib/grafana/dashboards/"},{"name":"volume-nhen1","mountPath":"/etc/grafana/provisioning/datasources/"}],"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File","imagePullPolicy":"IfNotPresent"}],"restartPolicy":"Always","terminationGracePeriodSeconds":30,"dnsPolicy":"ClusterFirst","securityContext":{},"schedulerName":"default-scheduler"}}},"status":{"latestVersion":9,"observedGeneration":9,"replicas":1,"updatedReplicas":1,"availableReplicas":0,"unavailableReplicas":1,"details":{"message":"manual change","causes":[{"type":"Manual"}]},"conditions":[{"type":"Progressing","status":"True","lastUpdateTime":"2019-05-27T20:52:47Z","lastTransitionTime":"2019-05-27T20:52:44Z","reason":"NewReplicationControllerAvailable","message":"replication controller \"${GRAFANA_SERVICE_NAME}-8\" successfully rolled out"},{"type":"Available","status":"False","lastUpdateTime":"2019-05-27T20:55:55Z","lastTransitionTime":"2019-05-27T20:55:55Z","message":"Deployment config does not have minimum availability."}]}}
+    generation: 2
+    labels:
+      app: ${GRAFANA_SERVICE_NAME}
+      openshift.io/deployment-config.name: ${GRAFANA_SERVICE_NAME}
+    name: ${GRAFANA_SERVICE_NAME}-9
+    ownerReferences:
+    - apiVersion: apps.openshift.io/v1  
+      controller: true
+      kind: DeploymentConfig
+      name: ${GRAFANA_SERVICE_NAME}
+      uid: 81af35b1-80ba-11e9-8dc7-0050568348cc
+    uid: e6aaec74-80c1-11e9-bf26-0050568379a2
+  spec:
+    replicas: 1
+    selector:
+      app: ${GRAFANA_SERVICE_NAME}
+      deployment: ${GRAFANA_SERVICE_NAME}-9
+      deploymentconfig: ${GRAFANA_SERVICE_NAME}
+    template:
+      metadata:
+        annotations:
+          openshift.io/deployment-config.latest-version: "9"
+          openshift.io/deployment-config.name: ${GRAFANA_SERVICE_NAME}
+          openshift.io/deployment.name: ${GRAFANA_SERVICE_NAME}-9
+          openshift.io/generated-by: OpenShiftNewApp
+        creationTimestamp: null
+        labels:
+          app: ${GRAFANA_SERVICE_NAME}
+          deployment: ${GRAFANA_SERVICE_NAME}-9
+          deploymentconfig: ${GRAFANA_SERVICE_NAME}
+      spec:
+        containers:
+        - image: grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71
+          imagePullPolicy: IfNotPresent
+          name: ${GRAFANA_SERVICE_NAME}
+          ports:
+          - containerPort: 3000
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/grafana/provisioning/dashboards
+            name: volume-q2h0q
+          - mountPath: /var/lib/grafana/dashboards/
+            name: volume-g1a5q
+          - mountPath: /etc/grafana/provisioning/datasources/
+            name: volume-nhen1
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - configMap:
+            defaultMode: 420
+            name: ${GRAFANA_SERVICE_NAME}-dashboard-providers
+          name: volume-q2h0q
+        - configMap:
+            defaultMode: 420
+            name: ${GRAFANA_SERVICE_NAME}-simple-dashboard
+          name: volume-g1a5q
+        - configMap:
+            defaultMode: 420
+            name: ${GRAFANA_SERVICE_NAME}-datasources
+          name: volume-nhen1
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftNewApp
+    labels:
+      app: ${GRAFANA_SERVICE_NAME}
+    name: ${GRAFANA_SERVICE_NAME}
+  spec:
+    ports:
+    - name: 3000-tcp
+      port: 3000
+      protocol: TCP
+      targetPort: 3000
+    selector:
+      app: ${GRAFANA_SERVICE_NAME}
+      deploymentconfig: ${GRAFANA_SERVICE_NAME}
+    sessionAffinity: None
+    type: ClusterIP
+- apiVersion: apps.openshift.io/v1
+  kind: DeploymentConfig
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftNewApp
+    labels:
+      app: ${GRAFANA_SERVICE_NAME}
+    name: ${GRAFANA_SERVICE_NAME}
+   
+  spec:
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      app: ${GRAFANA_SERVICE_NAME}
+      deploymentconfig: ${GRAFANA_SERVICE_NAME}
+    strategy:
+      activeDeadlineSeconds: 21600
+      resources: {}
+      rollingParams:
+        intervalSeconds: 1
+        maxSurge: 25%
+        maxUnavailable: 25%
+        timeoutSeconds: 600
+        updatePeriodSeconds: 1
+      type: Rolling
+    template:
+      metadata:
+        annotations:
+          openshift.io/generated-by: OpenShiftNewApp
+        creationTimestamp: null
+        labels:
+          app: ${GRAFANA_SERVICE_NAME}
+          deploymentconfig: ${GRAFANA_SERVICE_NAME}
+      spec:
+        containers:
+        - image: grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71
+          imagePullPolicy: IfNotPresent
+          name: ${GRAFANA_SERVICE_NAME}
+          ports:
+          - containerPort: 3000
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/grafana/provisioning/dashboards
+            name: volume-q2h0q
+          - mountPath: /var/lib/grafana/dashboards/
+            name: volume-g1a5q
+          - mountPath: /etc/grafana/provisioning/datasources/
+            name: volume-nhen1
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - configMap:
+            defaultMode: 420
+            name: ${GRAFANA_SERVICE_NAME}-dashboard-providers
+          name: volume-q2h0q
+        - configMap:
+            defaultMode: 420
+            name: ${GRAFANA_SERVICE_NAME}-simple-dashboard
+          name: volume-g1a5q
+        - configMap:
+            defaultMode: 420
+            name: ${GRAFANA_SERVICE_NAME}-datasources
+          name: volume-nhen1
+    test: false
+    triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - ${GRAFANA_SERVICE_NAME}
+        from:
+          kind: ImageStreamTag
+          name: ${GRAFANA_SERVICE_NAME}:6.2.0
+        lastTriggeredImage: grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71
+      type: ImageChange
+- apiVersion: image.openshift.io/v1
+  kind: ImageStream
+  metadata:
+    annotations:
+      openshift.io/generated-by: OpenShiftNewApp
+      openshift.io/image.dockerRepositoryCheck: 2019-05-27T20:03:34Z
+    generation: 2
+    labels:
+      app: ${GRAFANA_SERVICE_NAME}
+    name: ${GRAFANA_SERVICE_NAME}
+  spec:
+    lookupPolicy:
+      local: false
+    tags:
+    - annotations:
+        openshift.io/imported-from: grafana/grafana:6.2.0
+      from:
+        kind: DockerImage
+        name: grafana/grafana:6.2.0
+      generation: 2
+      importPolicy: {}
+      name: 6.2.0
+      referencePolicy:
+        type: Source
+- apiVersion: route.openshift.io/v1
+  kind: Route
+  metadata:
+    annotations:
+      openshift.io/host.generated: "true"
+    labels:
+      app: ${GRAFANA_SERVICE_NAME}
+    name: ${GRAFANA_SERVICE_NAME}
+  spec:
+    host: ${GRAFANA_SERVICE_NAME}-${NAMESPACE}.${ROUTE_SUBDOMAIN}
+    port:
+      targetPort: 3000-tcp
+    to:
+      kind: Service
+      name: ${GRAFANA_SERVICE_NAME}
+      weight: 100
+    wildcardPolicy: None
+- apiVersion: v1
+  data:
+    dashboard.yml: "apiVersion: 1\n\nproviders:\n  # <string> provider name\n- name:
+      'default'\n  # <int> org id. will default to orgId 1 if not specified\n  orgId:
+      1\n  # <string, required> name of the dashboard folder. Required\n  folder:
+      ''\n  # <string> folder UID. will be automatically generated if not specified\n
+      \ folderUid: ''\n  # <string, required> provider type. Required\n  type: file\n
+      \ # <bool> disable dashboard deletion\n  disableDeletion: false\n  # <bool>
+      enable dashboard editing\n  editable: true\n  # <int> how often Grafana will
+      scan for changed dashboards\n  updateIntervalSeconds: 10  \n  options:\n    #
+      <string, required> path to dashboard files on disk. Required\n    path: /var/lib/grafana/dashboards"
+  kind: ConfigMap
+  metadata:
+    labels:
+      app: ${GRAFANA_SERVICE_NAME}
+    name: ${GRAFANA_SERVICE_NAME}-dashboard-providers
+- apiVersion: v1
+  data:
+    datasources.yml: |-
+      # config file version
+      apiVersion: 1
+
+      datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        orgId: 1
+        url: http://${PROMETHEUS_SERVICE_NAME}:80
+        isDefault: true
+        version: 1
+        editable: true
+      - name: Loki
+        type: loki
+        orgId: 1
+        access: proxy
+        url: http://${LOKI_SERVICE_NAME}:3100
+        jsonData:
+            maxLines: 1000
+  kind: ConfigMap
+  metadata:
+    labels:
+      app: ${GRAFANA_SERVICE_NAME}
+    name: ${GRAFANA_SERVICE_NAME}-datasources
+- apiVersion: v1
+  data:
+    simple-dashboard.json: |-
+      {
+        "annotations": {
+          "list": [
+            {
+              "builtIn": 1,
+              "datasource": "-- Grafana --",
+              "enable": true,
+              "hide": true,
+              "iconColor": "rgba(0, 211, 255, 1)",
+              "name": "Annotations & Alerts",
+              "type": "dashboard"
+            }
+          ]
+        },
+        "editable": true,
+        "gnetId": null,
+        "graphTooltip": 0,
+        "id": 1,
+        "links": [],
+        "panels": [
+          {
+            "cacheTimeout": null,
+            "colorBackground": false,
+            "colorValue": false,
+            "colors": [
+              "#299c46",
+              "rgba(237, 129, 40, 0.89)",
+              "#d44a3a"
+            ],
+            "datasource": "Prometheus",
+            "format": "none",
+            "gauge": {
+              "maxValue": 100,
+              "minValue": 0,
+              "show": false,
+              "thresholdLabels": false,
+              "thresholdMarkers": true
+            },
+            "gridPos": {
+              "h": 9,
+              "w": 12,
+              "x": 0,
+              "y": 0
+            },
+            "id": 2,
+            "interval": null,
+            "links": [],
+            "mappingType": 1,
+            "mappingTypes": [
+              {
+                "name": "value to text",
+                "value": 1
+              },
+              {
+                "name": "range to text",
+                "value": 2
+              }
+            ],
+            "maxDataPoints": 100,
+            "nullPointMode": "connected",
+            "nullText": null,
+            "options": {},
+            "pluginVersion": "6.2.0",
+            "postfix": "",
+            "postfixFontSize": "50%",
+            "prefix": "",
+            "prefixFontSize": "50%",
+            "rangeMaps": [
+              {
+                "from": "null",
+                "text": "N/A",
+                "to": "null"
+              }
+            ],
+            "sparkline": {
+              "fillColor": "rgba(31, 118, 189, 0.18)",
+              "full": false,
+              "lineColor": "rgb(31, 120, 193)",
+              "show": false
+            },
+            "tableColumn": "",
+            "targets": [
+              {
+                "expr": "sum(up)",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "refId": "B"
+              },
+              {
+                "expr": "",
+                "format": "time_series",
+                "intervalFactor": 1,
+                "refId": "A"
+              }
+            ],
+            "thresholds": "",
+            "timeFrom": null,
+            "timeShift": null,
+            "title": "Total Pods Watched Prometheus",
+            "type": "singlestat",
+            "valueFontSize": "80%",
+            "valueMaps": [
+              {
+                "op": "=",
+                "text": "N/A",
+                "value": "null"
+              }
+            ],
+            "valueName": "avg"
+          }
+        ],
+        "schemaVersion": 18,
+        "style": "dark",
+        "tags": [],
+        "templating": {
+          "list": []
+        },
+        "time": {
+          "from": "now-6h",
+          "to": "now"
+        },
+        "timepicker": {
+          "refresh_intervals": [
+            "5s",
+            "10s",
+            "30s",
+            "1m",
+            "5m",
+            "15m",
+            "30m",
+            "1h",
+            "2h",
+            "1d"
+          ],
+          "time_options": [
+            "5m",
+            "15m",
+            "1h",
+            "6h",
+            "12h",
+            "24h",
+            "2d",
+            "7d",
+            "30d"
+          ]
+        },
+        "timezone": "",
+        "title": "Simple Dash",
+        "uid": "ndvcNRMZk",
+        "version": 1
+      }
+  kind: ConfigMap
+  metadata:
+    labels:
+      app: ${GRAFANA_SERVICE_NAME}
+    name: ${GRAFANA_SERVICE_NAME}-simple-dashboard
+parameters:
+- description: Maximum amount of memory the container can use.
+  displayName: Memory Limit
+  name: MEMORY_LIMIT
+  required: true
+  value: 512Mi
+- description: The namespace this templated is deployed into.
+  displayName: Namespace
+  name: NAMESPACE
+  value: openshift
+- description: The name of the OpenShift Service exposed for the database.
+  displayName: Grafana Service Name
+  name: GRAFANA_SERVICE_NAME
+  required: true
+  value: grafana
+- description: The name of the Loki service to connect to.
+  displayName: Loki Service Name
+  name: LOKI_SERVICE_NAME
+  required: true
+  value: loki
+- description: The name of the Prometheus service to connect to.
+  displayName: Prometheus Service Name
+  name: PROMETHEUS_SERVICE_NAME
+  required: true
+  value: prometheus
+- description: Default route subdomain
+  displayName: Route subdomain
+  name: ROUTE_SUBDOMAIN
+  required: true
+  value: pathfinder.gov.bc.ca

@@ -38,3 +38,28 @@ Helm overlaps with openshift templates. It's the official package manager for Ku
 
 
 In the openshift context, we can use Helm to process templates.
+
+
+After templates are created you can run the following commands to get these apps running.
+
+
+```
+# processing grafana template
+oc process grafana-template \
+    -p GRAFANA_SERVICE_NAME=grafana-patrick \
+    -p LOKI_SERVICE_NAME=patrick-loki \
+    -p PROMETHEUS_SERVICE_NAME=patrick-prometheus \
+    -p ROUTE_SUBDOMAIN=pathfinder.gov.bc.ca \
+    -p NAMESPACE=4g19x-patricksimonian-openshift201-may2019-dev 
+
+# processing loki template
+oc process loki-template \
+    -p LOKI_SERVICE_NAME=patrick-loki \
+    -p ROUTE_SUBDOMAIN=pathfinder.gov.bc.ca \
+    -p NAMESPACE=4g19x-patricksimonian-openshift201-may2019-dev \
+
+oc process prometheus-template \
+    -p PROMETHEUS_SERVICE_NAME=patrick-loki
+    -p ROUTE_SUBDOMAIN=pathfinder.gov.bc.ca \
+    -p NAMESPACE=4g19x-patricksimonian-openshift201-may2019-dev \
+```
