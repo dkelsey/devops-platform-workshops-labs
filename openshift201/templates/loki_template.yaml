@@ -144,7 +144,7 @@ objects:
       release: ${LOKI_SERVICE_NAME}
     name: ${LOKI_SERVICE_NAME}
   spec:
-    host: ${LOKI_SERVICE_NAME}.${ROUTE_SUBDOMAIN}
+    host: ${LOKI_SERVICE_NAME}-${ROUTE_ENV}.${ROUTE_SUBDOMAIN}
     port:
       targetPort: http-metrics
     to:
@@ -163,3 +163,8 @@ parameters:
   name: ROUTE_SUBDOMAIN
   required: true
   value: pathfinder.gov.bc.ca
+- description: variable to the route
+  displayName: Route env
+  name: ROUTE_ENV
+  required: true
+  value: dev
