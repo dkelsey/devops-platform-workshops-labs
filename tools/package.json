@@ -1,0 +1,30 @@
+{
+  "name": "clean-template-things",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "clean-template-things": "index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/patricksimonian/devops-platform-workshops-labs.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/patricksimonian/devops-platform-workshops-labs/issues"
+  },
+  "homepage": "https://github.com/patricksimonian/devops-platform-workshops-labs#readme",
+  "dependencies": {
+    "js-yaml": "^3.13.1",
+    "lodash": "^4.17.11",
+    "minimist": "^1.2.0",
+    "read-file-relative": "^1.2.0",
+    "write": "^1.0.3"
+  }
+}

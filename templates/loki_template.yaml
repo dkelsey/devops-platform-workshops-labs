@@ -1,0 +1,396 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+labels:
+  template: loki-template
+message: >-
+  The following service(s) have been created in your project:
+  ${LOKI_SERVICE_NAME}.
+
+  For more information about using this template, including OpenShift
+  considerations, contact the rocketchat community.
+metadata:
+  annotations:
+    description: >-
+      Loki Template for use in OpenShift 201 lab. 
+      
+      WARNING: Any configuration stored will be lost upon pod destruction.
+      ConfigMaps should be used for codified configuration. 
+    iconClass: icon-other-unknown
+    openshift.io/display-name: loki-openshift201
+    openshift.io/documentation-url: 'https://github.com/bcdevops/devops-platform-workshops'
+    openshift.io/long-description: This template provides a sample Loki configuration for lab purposes.
+    openshift.io/provider-display-name: BCDevOps
+    openshift.io/support-url: 'https://github.com/bcdevops/'
+    tags: 'monitoring,loki'
+  name: loki-template
+objects:
+  - apiVersion: v1
+    kind: Pod
+    spec:
+      affinity: {}
+      containers:
+        - args:
+            - '-config.file=/etc/loki/loki.yaml'
+          env:
+            - name: JAEGER_AGENT_HOST
+          image: 'grafana/loki:latest'
+          imagePullPolicy: Always
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /ready
+              port: http-metrics
+              scheme: HTTP
+            initialDelaySeconds: 45
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: loki
+          ports:
+            - containerPort: 3100
+              name: http-metrics
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /ready
+              port: http-metrics
+              scheme: HTTP
+            initialDelaySeconds: 45
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: 250m
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+          securityContext:
+            capabilities:
+              drop:
+                - KILL
+                - MKNOD
+                - SETGID
+                - SETUID
+            readOnlyRootFilesystem: true
+            runAsUser: 1007540000
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /etc/loki
+              name: config
+            - mountPath: /data
+              name: storage
+            - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+              name: default-token-82c4r
+              readOnly: true
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+        - name: default-dockercfg-xq5vd
+      nodeName: ociopf-p-191.dmz
+      nodeSelector:
+        region: app
+      priority: 0
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext:
+        fsGroup: 1007540000
+        runAsNonRoot: true
+        seLinuxOptions:
+          level: 's0:c87,c29'
+      serviceAccount: default
+      serviceAccountName: default
+      terminationGracePeriodSeconds: 30
+      tolerations:
+        - effect: NoSchedule
+          key: node.kubernetes.io/memory-pressure
+          operator: Exists
+      volumes:
+        - name: config
+          secret:
+            defaultMode: 420
+            secretName: '${LOKI_SERVICE_NAME}'
+        - emptyDir: {}
+          name: storage
+        - name: default-token-82c4r
+          secret:
+            defaultMode: 420
+            secretName: default-token-82c4r
+    metadata:
+      annotations:
+        checksum/config: 8a9c801aec546363faba27a5edec404bf1e5781bf40f8e5badbeeaf11f23e5d9
+        kubernetes.io/limit-ranger: >-
+          LimitRanger plugin set: cpu, memory request for container loki; cpu,
+          memory limit for container loki
+        openshift.io/scc: restricted
+        prometheus.io/port: http-metrics
+        prometheus.io/scrape: 'true'
+      generateName: '${LOKI_SERVICE_NAME}-867479cfb-'
+      labels:
+        app: loki
+        name: loki
+        pod-template-hash: '423035796'
+        release: '${LOKI_SERVICE_NAME}'
+      name: '${LOKI_SERVICE_NAME}-867479cfb-w7rrd'
+      ownerReferences:
+        - apiVersion: apps/v1
+          controller: true
+          kind: ReplicaSet
+          name: '${LOKI_SERVICE_NAME}-867479cfb'
+          uid: 1a19e809-80bb-11e9-8dc7-0050568348cc
+  - apiVersion: v1
+    kind: Service
+    spec:
+      ports:
+        - name: http-metrics
+          port: 3100
+          protocol: TCP
+          targetPort: http-metrics
+      selector:
+        app: loki
+        release: '${LOKI_SERVICE_NAME}'
+      sessionAffinity: None
+      type: ClusterIP
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/last-applied-configuration: >
+          {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"app":"loki","chart":"loki-0.8.4","heritage":"Tiller","release":"${LOKI_SERVICE_NAME}"},"name":"${LOKI_SERVICE_NAME}","namespace":"s4g19x-patricksimonian-openshift201-may2019-dev"},"spec":{"ports":[{"name":"http-metrics","port":3100,"protocol":"TCP","targetPort":"http-metrics"}],"selector":{"app":"loki","release":"${LOKI_SERVICE_NAME}"},"type":"ClusterIP"}}
+      labels:
+        app: loki
+        chart: loki-0.8.4
+        heritage: Tiller
+        release: '${LOKI_SERVICE_NAME}'
+      name: '${LOKI_SERVICE_NAME}'
+  - apiVersion: apps/v1
+    kind: Deployment
+    spec:
+      progressDeadlineSeconds: 600
+      replicas: 1
+      revisionHistoryLimit: 10
+      selector:
+        matchLabels:
+          app: loki
+          release: '${LOKI_SERVICE_NAME}'
+      strategy:
+        rollingUpdate:
+          maxSurge: 25%
+          maxUnavailable: 25%
+        type: RollingUpdate
+      template:
+        metadata:
+          annotations:
+            checksum/config: 8a9c801aec546363faba27a5edec404bf1e5781bf40f8e5badbeeaf11f23e5d9
+            prometheus.io/port: http-metrics
+            prometheus.io/scrape: 'true'
+          creationTimestamp: null
+          labels:
+            app: loki
+            name: loki
+            release: '${LOKI_SERVICE_NAME}'
+        spec:
+          affinity: {}
+          containers:
+            - args:
+                - '-config.file=/etc/loki/loki.yaml'
+              env:
+                - name: JAEGER_AGENT_HOST
+              image: 'grafana/loki:latest'
+              imagePullPolicy: Always
+              livenessProbe:
+                failureThreshold: 3
+                httpGet:
+                  path: /ready
+                  port: http-metrics
+                  scheme: HTTP
+                initialDelaySeconds: 45
+                periodSeconds: 10
+                successThreshold: 1
+                timeoutSeconds: 1
+              name: loki
+              ports:
+                - containerPort: 3100
+                  name: http-metrics
+                  protocol: TCP
+              readinessProbe:
+                failureThreshold: 3
+                httpGet:
+                  path: /ready
+                  port: http-metrics
+                  scheme: HTTP
+                initialDelaySeconds: 45
+                periodSeconds: 10
+                successThreshold: 1
+                timeoutSeconds: 1
+              resources: {}
+              securityContext:
+                readOnlyRootFilesystem: true
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+              volumeMounts:
+                - mountPath: /etc/loki
+                  name: config
+                - mountPath: /data
+                  name: storage
+          dnsPolicy: ClusterFirst
+          restartPolicy: Always
+          schedulerName: default-scheduler
+          securityContext:
+            runAsNonRoot: true
+          serviceAccount: default
+          serviceAccountName: default
+          terminationGracePeriodSeconds: 30
+          volumes:
+            - name: config
+              secret:
+                defaultMode: 420
+                secretName: '${LOKI_SERVICE_NAME}'
+            - emptyDir: {}
+              name: storage
+    metadata:
+      annotations:
+        deployment.kubernetes.io/revision: '6'
+        kubectl.kubernetes.io/last-applied-configuration: >
+          {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"labels":{"app":"loki","chart":"loki-0.8.4","heritage":"Tiller","release":"${LOKI_SERVICE_NAME}"},"name":"${LOKI_SERVICE_NAME}","namespace":"s4g19x-patricksimonian-openshift201-may2019-dev"},"spec":{"minReadySeconds":0,"replicas":1,"selector":{"matchLabels":{"app":"loki","release":"${LOKI_SERVICE_NAME}"}},"strategy":{"type":"RollingUpdate"},"template":{"metadata":{"annotations":{"checksum/config":"8a9c801aec546363faba27a5edec404bf1e5781bf40f8e5badbeeaf11f23e5d9","prometheus.io/port":"http-metrics","prometheus.io/scrape":"true"},"labels":{"app":"loki","name":"loki","release":"${LOKI_SERVICE_NAME}"}},"spec":{"affinity":{},"containers":[{"args":["-config.file=/etc/loki/loki.yaml"],"env":[{"name":"JAEGER_AGENT_HOST","value":""}],"image":"grafana/loki:latest","imagePullPolicy":"Always","livenessProbe":{"httpGet":{"path":"/ready","port":"http-metrics"},"initialDelaySeconds":45},"name":"loki","ports":[{"containerPort":3100,"name":"http-metrics","protocol":"TCP"}],"readinessProbe":{"httpGet":{"path":"/ready","port":"http-metrics"},"initialDelaySeconds":45},"resources":{},"securityContext":{"readOnlyRootFilesystem":true},"volumeMounts":[{"mountPath":"/etc/loki","name":"config"},{"mountPath":"/data","name":"storage","subPath":null}]}],"nodeSelector":{},"securityContext":{"runAsNonRoot":true},"serviceAccountName":"default","terminationGracePeriodSeconds":30,"tolerations":[],"volumes":[{"name":"config","secret":{"secretName":"${LOKI_SERVICE_NAME}"}},{"emptyDir":{},"name":"storage"}]}}}}
+      generation: 6
+      labels:
+        app: loki
+        chart: loki-0.8.4
+        heritage: Tiller
+        release: '${LOKI_SERVICE_NAME}'
+      name: '${LOKI_SERVICE_NAME}'
+  - apiVersion: apps/v1
+    kind: ReplicaSet
+    spec:
+      replicas: 0
+      selector:
+        matchLabels:
+          app: loki
+          pod-template-hash: '1310680726'
+          release: '${LOKI_SERVICE_NAME}'
+      template:
+        metadata:
+          annotations:
+            checksum/config: 8a9c801aec546363faba27a5edec404bf1e5781bf40f8e5badbeeaf11f23e5d9
+            prometheus.io/port: http-metrics
+            prometheus.io/scrape: 'true'
+          creationTimestamp: null
+          labels:
+            app: loki
+            name: loki
+            pod-template-hash: '1310680726'
+            release: '${LOKI_SERVICE_NAME}'
+        spec:
+          affinity: {}
+          containers:
+            - args:
+                - '-config.file=/etc/loki/loki.yaml'
+              env:
+                - name: JAEGER_AGENT_HOST
+              image: 'grafana/loki:latest'
+              imagePullPolicy: Always
+              livenessProbe:
+                failureThreshold: 3
+                httpGet:
+                  path: /ready
+                  port: http-metrics
+                  scheme: HTTP
+                initialDelaySeconds: 60
+                periodSeconds: 10
+                successThreshold: 1
+                timeoutSeconds: 1
+              name: loki
+              ports:
+                - containerPort: 80
+                  name: http-metrics
+                  protocol: TCP
+              readinessProbe:
+                failureThreshold: 3
+                httpGet:
+                  path: /ready
+                  port: http-metrics
+                  scheme: HTTP
+                initialDelaySeconds: 60
+                periodSeconds: 10
+                successThreshold: 1
+                timeoutSeconds: 1
+              resources: {}
+              securityContext:
+                readOnlyRootFilesystem: true
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+              volumeMounts:
+                - mountPath: /etc/loki
+                  name: config
+                - mountPath: /data
+                  name: storage
+          dnsPolicy: ClusterFirst
+          restartPolicy: Always
+          schedulerName: default-scheduler
+          securityContext:
+            runAsNonRoot: true
+          serviceAccount: default
+          serviceAccountName: default
+          terminationGracePeriodSeconds: 30
+          volumes:
+            - name: config
+              secret:
+                defaultMode: 420
+                secretName: '${LOKI_SERVICE_NAME}'
+            - emptyDir: {}
+              name: storage
+    metadata:
+      annotations:
+        deployment.kubernetes.io/desired-replicas: '1'
+        deployment.kubernetes.io/max-replicas: '2'
+        deployment.kubernetes.io/revision: '5'
+        deployment.kubernetes.io/revision-history: '3'
+      generation: 4
+      labels:
+        app: loki
+        name: loki
+        pod-template-hash: '1310680726'
+        release: '${LOKI_SERVICE_NAME}'
+      name: '${LOKI_SERVICE_NAME}-5754bd4c6b'
+      ownerReferences:
+        - apiVersion: apps/v1
+          controller: true
+          kind: Deployment
+          name: '${LOKI_SERVICE_NAME}'
+          uid: 1a15bbf3-80bb-11e9-8dc7-0050568348cc
+  - apiVersion: route.openshift.io/v1
+    kind: Route
+    spec:
+      host: '${LOKI_SERVICE_NAME}-${NAMESPACE}.${ROUTE_SUBDOMAIN}'
+      port:
+        targetPort: http-metrics
+      to:
+        kind: Service
+        name: '${LOKI_SERVICE_NAME}'
+        weight: 100
+      wildcardPolicy: None
+    metadata:
+      annotations:
+        openshift.io/host.generated: 'true'
+      labels:
+        app: loki
+        chart: loki-0.8.4
+        heritage: Tiller
+        release: '${LOKI_SERVICE_NAME}'
+      name: '${LOKI_SERVICE_NAME}'
+parameters:
+  - description: The namespace this templated is deployed into.
+    displayName: Namespace
+    name: NAMESPACE
+    value: openshift
+  - description: The name of the Loki service to connect to.
+    displayName: Loki Service Name
+    name: LOKI_SERVICE_NAME
+    required: true
+    value: loki
+  - description: Default route subdomain
+    displayName: Route subdomain
+    name: ROUTE_SUBDOMAIN
+    required: true
+    value: pathfinder.gov.bc.ca
