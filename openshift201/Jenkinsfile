@@ -13,6 +13,7 @@ node {
       checkout scm
       sh "echo HELLO WORLD! --------------"
       sh "ls -lha openshift201/templates"
+      sh "oc get projects"
     }
   }
 }
