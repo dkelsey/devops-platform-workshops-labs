@@ -25,8 +25,13 @@ node {
           | oc apply -f - -n ${DEV_NAMESPACE}"
 
       sh "echo Wait for service to be up"
-      timeout (time: 60, unit: "SECONDS"){
-        openshiftVerifyService apiURL: '', authToken: '', namespace: "${DEV_NAMESPACE}", svcName: "${LOKI_SERVICE}", verbose: 'false'
+      timeout (time: 180, unit: 'SECONDS'){
+        openshift.withCluster() {
+        openshift.withProject("${DEV_NAMESPACE}") {
+          def dc = openshift.selector('deployment', "${LOKI_SERVICE}")
+          // this will wait until the desired replicas are available
+          dc.rollout().status()
+        }
       }
     }
   }
