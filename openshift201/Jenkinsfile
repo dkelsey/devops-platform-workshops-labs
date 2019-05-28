@@ -25,7 +25,9 @@ node {
           | oc apply -f - -n ${DEV_NAMESPACE}"
 
       sh "echo Wait for service to be up"
-      openshiftVerifyService apiURL: '', authToken: '', namespace: "${DEV_NAMESPACE}", svcName: "${LOKI_SERVICE}", verbose: 'false'
+      timeout (time: 60, unit: "SECONDS"){
+        openshiftVerifyService apiURL: '', authToken: '', namespace: "${DEV_NAMESPACE}", svcName: "${LOKI_SERVICE}", verbose: 'false'
+      }
     }
   }
 }
