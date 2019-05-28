@@ -1,0 +1,173 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+labels:
+  template: loki-template
+message: |-
+  The following service(s) have been created in your project: ${LOKI_SERVICE_NAME}.
+  For more information about using this template, including OpenShift considerations, contact the rocketchat community.
+metadata:
+  annotations:
+    description: |-
+      Loki Template
+    iconClass: icon-other-unknown
+    openshift.io/display-name: loki-openshift201
+    openshift.io/documentation-url: https://github.com/bcdevops/devops-platform-workshops
+    openshift.io/long-description: This template provides a sample Loki for lab purposes.
+    openshift.io/provider-display-name: BCDevOps
+    openshift.io/support-url: https://github.com/bcdevops/
+    tags: loki
+  name: loki-template
+objects:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+    labels:
+      app: ${LOKI_SERVICE_NAME}
+      chart: loki-0.8.4
+      heritage: Tiller
+      release: ${LOKI_SERVICE_NAME}
+    name: ${LOKI_SERVICE_NAME}
+  spec:
+    ports:
+    - name: http-metrics
+      port: 3100
+      protocol: TCP
+      targetPort: http-metrics
+    selector:
+      app: ${LOKI_SERVICE_NAME}
+      release: ${LOKI_SERVICE_NAME}
+    sessionAffinity: None
+    type: ClusterIP
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "1"
+    labels:
+      app: ${LOKI_SERVICE_NAME}
+      chart: loki-0.8.4
+      heritage: Tiller
+      release: ${LOKI_SERVICE_NAME}
+    name: ${LOKI_SERVICE_NAME}
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: ${LOKI_SERVICE_NAME}
+        release: ${LOKI_SERVICE_NAME}
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        annotations:
+          checksum/config: 26fb0f26f8d85715186a8e9f1f7c47d7f5326733b19be127d30360d81a285c76
+          prometheus.io/port: http-metrics
+          prometheus.io/scrape: "true"
+        labels:
+          app: ${LOKI_SERVICE_NAME}
+          name: ${LOKI_SERVICE_NAME}
+          release: ${LOKI_SERVICE_NAME}
+      spec:
+        affinity: {}
+        containers:
+        - args:
+          - -config.file=/etc/loki/loki.yaml
+          env:
+          - name: JAEGER_AGENT_HOST
+          image: grafana/loki:latest
+          imagePullPolicy: Always
+          livenessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /ready
+              port: http-metrics
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: ${LOKI_SERVICE_NAME}
+          ports:
+          - containerPort: 3100
+            name: http-metrics
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 5
+            httpGet:
+              path: /ready
+              port: http-metrics
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources: {}
+          securityContext:
+            readOnlyRootFilesystem: true
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/loki
+            name: config
+          - mountPath: /data
+            name: storage
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: default
+        serviceAccountName: default
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: config
+          secret:
+            defaultMode: 420
+            secretName: ${LOKI_SERVICE_NAME}
+        - emptyDir: {}
+          name: storage
+- apiVersion: route.openshift.io/v1
+  kind: Route
+  metadata:
+    annotations:
+      openshift.io/host.generated: "true"
+    labels:
+      app: ${LOKI_SERVICE_NAME}
+      chart: loki-0.8.4
+      heritage: Tiller
+      release: ${LOKI_SERVICE_NAME}
+    name: ${LOKI_SERVICE_NAME}
+  spec:
+    host: ${LOKI_SERVICE_NAME}.${ROUTE_SUBDOMAIN}
+    port:
+      targetPort: http-metrics
+    to:
+      kind: Service
+      name: ${LOKI_SERVICE_NAME}
+      weight: 100
+    wildcardPolicy: None
+parameters:
+- description: Maximum amount of memory the container can use.
+  displayName: Memory Limit
+  name: MEMORY_LIMIT
+  required: true
+  value: 512Mi
+- description: The namespace this templated is deployed into.
+  displayName: Namespace
+  name: NAMESPACE
+  value: openshift
+- description: The name of the Loki service to connect to.
+  displayName: Loki Service Name
+  name: LOKI_SERVICE_NAME
+  required: true
+  value: loki
+- description: Default route subdomain
+  displayName: Route subdomain
+  name: ROUTE_SUBDOMAIN
+  required: true
+  value: pathfinder.gov.bc.ca
