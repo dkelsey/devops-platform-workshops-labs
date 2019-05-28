@@ -11,7 +11,7 @@ node {
   stage ('Build Stage'){
     dir ('simple_pipeline') {
       checkout scm
-      sh "echo HELLO WORLD! "
+      sh "echo HELLO WORLD! --------------"
       sh "ls -lha openshift201/templates"
     }
   }
