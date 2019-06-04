@@ -1,5 +1,25 @@
-apiVersion: v1
-items:
+apiVersion: template.openshift.io/v1
+kind: Template
+labels:
+  template: grafana-template
+message: |-
+  The following service(s) have been created in your project: ${GRAFANA_SERVICE_NAME}.
+  For more information about using this template, including OpenShift considerations, contact the rocketchat community.
+metadata:
+  annotations:
+    description: |-
+      Grafana Template for use in OpenShift 201 lab without persistent storage. 
+
+      WARNING: Any configuration stored will be lost upon pod destruction. ConfigMaps should be used for codified configuration. 
+    iconClass: icon-other-unknown
+    openshift.io/display-name: grafana-openshift201
+    openshift.io/documentation-url: https://github.com/bcdevops/devops-platform-workshops
+    openshift.io/long-description: This template provides a sample Grafana configuration for lab purposes.
+    openshift.io/provider-display-name: BCDevOps
+    openshift.io/support-url: https://github.com/bcdevops/
+    tags: monitoring,grafana
+  name: grafana-template
+objects: 
 - apiVersion: v1
   kind: Service
   metadata:
@@ -64,11 +84,11 @@ items:
           terminationMessagePolicy: File
           volumeMounts:
           - mountPath: /etc/grafana/provisioning/dashboards
-            name: volume-obqzy
+            name: volume-g0iuo
           - mountPath: /etc/grafana/provisioning/datasources/
-            name: volume-i99ka
+            name: volume-1em50
           - mountPath: /var/lib/grafana/dashboards/
-            name: volume-wik5e
+            name: volume-2vu1x
         dnsPolicy: ClusterFirst
         restartPolicy: Always
         schedulerName: default-scheduler
@@ -78,15 +98,15 @@ items:
         - configMap:
             defaultMode: 420
             name: ${GRAFANA_SERVICE_NAME}-dashboard-provider
-          name: volume-obqzy
+          name: volume-g0iuo
         - configMap:
             defaultMode: 420
             name: ${GRAFANA_SERVICE_NAME}-datasources
-          name: volume-i99ka
+          name: volume-1em50
         - configMap:
             defaultMode: 420
-            name: ${GRAFANA_SERVICE_NAME}-sample-dashboard
-          name: volume-wik5e
+            name: ${GRAFANA_SERVICE_NAME}-dashboard
+          name: volume-2vu1x
     test: false
     triggers:
     - type: ConfigChange
@@ -97,6 +117,7 @@ items:
         from:
           kind: ImageStreamTag
           name: ${GRAFANA_SERVICE_NAME}:6.2.0
+          namespace: ${NAMESPACE}
         lastTriggeredImage: grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71
       type: ImageChange
 - apiVersion: image.openshift.io/v1
@@ -104,7 +125,7 @@ items:
   metadata:
     annotations:
       openshift.io/generated-by: OpenShiftNewApp
-      openshift.io/image.dockerRepositoryCheck: 2019-05-27T21:09:03Z
+      openshift.io/image.dockerRepositoryCheck: 2019-06-03T04:40:25Z
     labels:
       app: ${GRAFANA_SERVICE_NAME}
     name: ${GRAFANA_SERVICE_NAME}
@@ -158,17 +179,17 @@ items:
   data:
     datasources.yml: "  # config file version\n  apiVersion: 1\n\n  datasources:\n
       \ - name: Prometheus\n    type: prometheus\n    access: proxy\n    orgId: 1\n
-      \   url: http://prometheus:80  \n    isDefault: true\n    version: 1\n    editable:
+      \   url: http://${PROMETHEUS_SERVICE_NAME}:80  \n    isDefault: true\n    version: 1\n    editable:
       true\n  - name: Loki\n    type: loki\n    orgId: 1\n    access: proxy\n    url:
-      http://loki:3100  \n    jsonData:\n        maxLines: 1000"
+      http://${LOKI_SERVICE_NAME}:3100  \n    jsonData:\n        maxLines: 1000"
   kind: ConfigMap
   metadata:
     labels:
       app: ${GRAFANA_SERVICE_NAME}
-    name: dkelsey-graphana-datasources
+    name: ${GRAFANA_SERVICE_NAME}-datasources
 - apiVersion: v1
   data:
-    sample_dashboard.json: |-
+    sample-dashboard.json: |-
       {
         "annotations": {
           "list": [
@@ -190,91 +211,88 @@ items:
         "links": [],
         "panels": [
           {
-            "aliasColors": {},
-            "bars": false,
-            "dashLength": 10,
-            "dashes": false,
-            "fill": 1,
+            "cacheTimeout": null,
+            "colorBackground": false,
+            "colorValue": false,
+            "colors": [
+              "#299c46",
+              "rgba(237, 129, 40, 0.89)",
+              "#d44a3a"
+            ],
+            "format": "none",
+            "gauge": {
+              "maxValue": 100,
+              "minValue": 0,
+              "show": false,
+              "thresholdLabels": false,
+              "thresholdMarkers": true
+            },
             "gridPos": {
-              "h": 9,
+              "h": 8,
               "w": 12,
               "x": 0,
               "y": 0
             },
             "id": 2,
-            "legend": {
-              "avg": false,
-              "current": false,
-              "max": false,
-              "min": false,
-              "show": true,
-              "total": false,
-              "values": false
-            },
-            "lines": true,
-            "linewidth": 1,
+            "interval": null,
             "links": [],
-            "nullPointMode": "null",
+            "mappingType": 1,
+            "mappingTypes": [
+              {
+                "name": "value to text",
+                "value": 1
+              },
+              {
+                "name": "range to text",
+                "value": 2
+              }
+            ],
+            "maxDataPoints": 100,
+            "nullPointMode": "connected",
+            "nullText": null,
             "options": {},
-            "percentage": false,
-            "pointradius": 2,
-            "points": false,
-            "renderer": "flot",
-            "seriesOverrides": [],
-            "spaceLength": 10,
-            "stack": false,
-            "steppedLine": false,
+            "postfix": "",
+            "postfixFontSize": "50%",
+            "prefix": "",
+            "prefixFontSize": "50%",
+            "rangeMaps": [
+              {
+                "from": "null",
+                "text": "N/A",
+                "to": "null"
+              }
+            ],
+            "sparkline": {
+              "fillColor": "rgba(31, 118, 189, 0.18)",
+              "full": false,
+              "lineColor": "rgb(31, 120, 193)",
+              "show": false
+            },
+            "tableColumn": "",
             "targets": [
               {
-                "expr": "",
+                "expr": "sum(up)",
                 "format": "time_series",
                 "intervalFactor": 1,
                 "refId": "A"
               }
             ],
-            "thresholds": [],
+            "thresholds": "",
             "timeFrom": null,
-            "timeRegions": [],
             "timeShift": null,
-            "title": "Panel Title",
-            "tooltip": {
-              "shared": true,
-              "sort": 0,
-              "value_type": "individual"
-            },
-            "type": "graph",
-            "xaxis": {
-              "buckets": null,
-              "mode": "time",
-              "name": null,
-              "show": true,
-              "values": []
-            },
-            "yaxes": [
+            "title": "Total Pods Watched (Prometheus)",
+            "type": "singlestat",
+            "valueFontSize": "80%",
+            "valueMaps": [
               {
-                "format": "short",
-                "label": null,
-                "logBase": 1,
-                "max": null,
-                "min": null,
-                "show": true
-              },
-              {
-                "format": "short",
-                "label": null,
-                "logBase": 1,
-                "max": null,
-                "min": null,
-                "show": true
+                "op": "=",
+                "text": "N/A",
+                "value": "null"
               }
             ],
-            "yaxis": {
-              "align": false,
-              "alignLevel": null
-            }
+            "valueName": "current"
           }
         ],
-        "refresh": false,
         "schemaVersion": 18,
         "style": "dark",
         "tags": [],
@@ -282,8 +300,8 @@ items:
           "list": []
         },
         "time": {
-          "from": "2019-05-27T12:45:25.419Z",
-          "to": "2019-05-28T00:45:25.419Z"
+          "from": "now-6h",
+          "to": "now"
         },
         "timepicker": {
           "refresh_intervals": [
@@ -311,13 +329,54 @@ items:
           ]
         },
         "timezone": "",
-        "title": "Sample Dashboard",
-        "uid": "4D3V5gMZk",
-        "version": 1
+        "title": "New dashboard Copy",
+        "uid": "Lth1-AMZk",
+        "version": 2
       }
   kind: ConfigMap
   metadata:
     labels:
       app: ${GRAFANA_SERVICE_NAME}
-    name: ${GRAFANA_SERVICE_NAME}-sample-dashboard
-kind: List
+    name: ${GRAFANA_SERVICE_NAME}-dashboard
+- apiVersion: v1
+  data:
+    datasource.yml: "# config file version\napiVersion: 1\n\ndatasources:\n- name:
+      Prometheus\n  type: prometheus\n  access: proxy\n  orgId: 1\n  url: http://${PROMETHEUS_SERVICE_NAME}:80
+      \n  isDefault: true\n  version: 1\n  editable: true\n- name: Loki\n  type: loki\n
+      \ orgId: 1\n  access: proxy\n  url: http://${LOKI_SERVICE_NAME}:3100 \n  jsonData:\n
+      \     maxLines: 1000"
+  kind: ConfigMap
+  metadata:
+    labels:
+      app: ${GRAFANA_SERVICE_NAME}
+    name: ${GRAFANA_SERVICE_NAME}-datasources
+parameters:
+- description: Maximum amount of memory the container can use.
+  displayName: Memory Limit
+  name: MEMORY_LIMIT
+  required: true
+  value: 512Mi
+- description: The namespace this templated is deployed into.
+  displayName: Namespace
+  name: NAMESPACE
+  value: openshift
+- description: The name of the OpenShift Service exposed for the database.
+  displayName: Grafana Service Name
+  name: GRAFANA_SERVICE_NAME
+  required: true
+  value: grafana
+- description: The name of the Loki service to connect to.
+  displayName: Loki Service Name
+  name: LOKI_SERVICE_NAME
+  required: true
+  value: loki
+- description: The name of the Prometheus service to connect to.
+  displayName: Prometheus Service Name
+  name: PROMETHEUS_SERVICE_NAME
+  required: true
+  value: prometheus
+- description: Default route subdomain
+  displayName: Route subdomain
+  name: ROUTE_SUBDOMAIN
+  required: true
+  value: pathfinder.gov.bc.ca
