@@ -12,6 +12,7 @@ node {
                 dir ('simple_pipeline') {
                     checkout scm
                     sh "oc get projects"
+                    sh "oc whomai"
                 }
             }
     }
