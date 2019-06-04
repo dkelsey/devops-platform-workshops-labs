@@ -1,0 +1,160 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+labels:
+  template: loki-template
+message: |-
+  The following service(s) have been created in your project: ${LOKI_SERVICE_NAME}.
+  For more information about using this template, including OpenShift considerations, contact the rocketchat community.
+metadata:
+  annotations:
+    description: |-
+      Loki Template for use in OpenShift 201 lab without persistent storage. 
+
+      WARNING: Any configuration stored will be lost upon pod destruction. ConfigMaps should be used for codified configuration. 
+    iconClass: icon-other-unknown
+    openshift.io/display-name: loki-openshift201
+    openshift.io/documentation-url: https://github.com/bcdevops/devops-platform-workshops
+    openshift.io/long-description: This template provides a sample Grafana configuration for lab purposes.
+    openshift.io/provider-display-name: BCDevOps
+    openshift.io/support-url: https://github.com/bcdevops/
+    tags: monitoring,grafana,loki
+  name: loki-template
+objects: 
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+    labels:
+      app: loki
+      chart: loki-0.9.2
+      heritage: Tiller
+      release: ${LOKI_SERVICE_NAME}
+    name: ${LOKI_SERVICE_NAME}
+  spec:
+    ports:
+    - name: http-metrics
+      port: 3100
+      protocol: TCP
+      targetPort: http-metrics
+    selector:
+      app: loki
+      release: ${LOKI_SERVICE_NAME}
+    sessionAffinity: None
+    type: ClusterIP
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+    labels:
+      app: loki
+      chart: loki-0.9.2
+      heritage: Tiller
+      release: ${LOKI_SERVICE_NAME}
+    name: ${LOKI_SERVICE_NAME}-headless
+    namespace: s4g19x-dkelsey-openshift201-may2019-dev
+  spec:
+    clusterIP: None
+    ports:
+    - name: http-metrics
+      port: 3100
+      protocol: TCP
+      targetPort: http-metrics
+    selector:
+      app: loki
+      release: ${LOKI_SERVICE_NAME}
+    sessionAffinity: None
+    type: ClusterIP
+- apiVersion: apps/v1
+  kind: StatefulSet
+  metadata:
+    annotations:
+    labels:
+      app: loki
+      chart: loki-0.9.2
+      heritage: Tiller
+      release: ${LOKI_SERVICE_NAME}
+    name: ${LOKI_SERVICE_NAME}
+  spec:
+    podManagementPolicy: OrderedReady
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: loki
+        release: ${LOKI_SERVICE_NAME}
+    serviceName: ${LOKI_SERVICE_NAME}-headless
+    template:
+      metadata:
+        annotations:
+          checksum/config: 027260042c8c97499812e3e6ae89b361d26dce463f7b0735f7a52d742d3640c1
+          prometheus.io/port: http-metrics
+          prometheus.io/scrape: "true"
+        creationTimestamp: null
+        labels:
+          app: loki
+          name: loki
+          release: ${LOKI_SERVICE_NAME}
+      spec:
+        affinity: {}
+        containers:
+        - args:
+          - -config.file=/etc/loki/loki.yaml
+          image: grafana/loki:latest
+          imagePullPolicy: Always
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /ready
+              port: http-metrics
+              scheme: HTTP
+            initialDelaySeconds: 45
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: loki
+          ports:
+          - containerPort: 3100
+            name: http-metrics
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /ready
+              port: http-metrics
+              scheme: HTTP
+            initialDelaySeconds: 45
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources: {}
+          securityContext:
+            readOnlyRootFilesystem: true
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /etc/loki
+            name: config
+          - mountPath: /data
+            name: storage
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        serviceAccount: default
+        serviceAccountName: default
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: config
+          secret:
+            defaultMode: 420
+            secretName: ${LOKI_SERVICE_NAME}
+        - emptyDir: {}
+          name: storage
+    updateStrategy:
+      type: RollingUpdate
+parameters:
+- description: The name of the Loki service to connect to.
+  displayName: Loki Service Name
+  name: LOKI_SERVICE_NAME
+  required: true
+  value: loki
