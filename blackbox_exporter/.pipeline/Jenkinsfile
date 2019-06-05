@@ -72,14 +72,14 @@ node {
                                 }
                 }
             }
-            input message: 'Want to deploy to PROD?', ok: 'Hang Tight?'
          }
-        
+
         stage('Promote to PROD') {
-                openshift.withCluster() {
-                    openshift.tag("blackboxexporter:latest", "blackboxexporter:prod")
-                }
+            input message: 'Want to deploy to PROD?', ok: 'Hang Tight?'
+            openshift.withCluster() {
+                openshift.tag("blackboxexporter:latest", "blackboxexporter:prod")
             }
+        }
 
         stage('Create PROD') {
             openshift.withCluster() {
