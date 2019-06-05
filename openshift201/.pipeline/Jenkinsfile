@@ -4,7 +4,7 @@
 def TOOLS_NAMESPACE = "s4g19x-dkelsey-openshift201-may2019-tools"
 def DEV_NAMESPACE = "s4g19x-dkelsey-openshift201-may2019-dev"
 def PROD_NAMESPACE = "s4g19x-dkelsey-openshift201-may2019-prod"
-def LOKI_SERVICE  = "loki"
+def LOKI_SERVICE  = "dkelsey-loki"
 
 //Pipeline
 node {
