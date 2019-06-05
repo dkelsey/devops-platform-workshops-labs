@@ -15,7 +15,7 @@ def ROUTE_SUBDOMAIN  = "pathfinder.gov.bc.ca"
 node {
 
             parallel (
-               stage ('Deploy Loki to Dev'){
+               'Deploy Loki to Dev'{
 
                    dir ('loki_pipeline') {
                        checkout scm
@@ -33,7 +33,7 @@ node {
                          }
                    }
                },
-               stage ('Deploy Prometheus to Dev'){
+               'Deploy Prometheus to Dev'{
 
                    dir ('prometheus_pipeline') {
                        checkout scm
@@ -51,7 +51,7 @@ node {
                          }
                    }
                },
-               stage ('Deploy Grafana to Dev'){
+               'Deploy Grafana to Dev'{
 
                    dir ('grafana_pipeline') {
                        checkout scm
@@ -61,7 +61,7 @@ node {
                        timeout (time: 180, unit: 'SECONDS'){
                            openshift.withCluster() {
                            openshift.withProject("${DEV_NAMESPACE}") {
-                               def dc = openshift.selector('deployment', "${GRAFANA_SERVICE}")
+                               def dc = openshift.selector('dc', "${GRAFANA_SERVICE}")
                                // this will wait until the desired replicas are available
                                dc.rollout().status()
                            }

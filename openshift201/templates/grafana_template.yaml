@@ -8,9 +8,9 @@ message: |-
 metadata:
   annotations:
     description: |-
-      Grafana Template for use in OpenShift 201 lab without persistent storage. 
+      Grafana Template for use in OpenShift 201 lab without persistent storage.
 
-      WARNING: Any configuration stored will be lost upon pod destruction. ConfigMaps should be used for codified configuration. 
+      WARNING: Any configuration stored will be lost upon pod destruction. ConfigMaps should be used for codified configuration.
     iconClass: icon-other-unknown
     openshift.io/display-name: grafana-openshift201
     openshift.io/documentation-url: https://github.com/bcdevops/devops-platform-workshops
@@ -19,7 +19,7 @@ metadata:
     openshift.io/support-url: https://github.com/bcdevops/
     tags: monitoring,grafana
   name: grafana-template
-objects: 
+objects:
 - apiVersion: v1
   kind: Service
   metadata:
