@@ -16,7 +16,7 @@ node {
 
       stage ('Deploy to Dev'){
             parallel (
-               'Deploy Loki to Dev'{
+               'Deploy Loki to Dev':{
 
                    dir ('loki_pipeline') {
                        checkout scm
@@ -34,7 +34,7 @@ node {
                          }
                    }
                },
-               'Deploy Prometheus to Dev'{
+               'Deploy Prometheus to Dev':{
 
                    dir ('prometheus_pipeline') {
                        checkout scm
@@ -52,7 +52,7 @@ node {
                          }
                    }
                },
-               'Deploy Grafana to Dev'{
+               'Deploy Grafana to Dev':{
 
                    dir ('grafana_pipeline') {
                        checkout scm
