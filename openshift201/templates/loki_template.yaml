@@ -14,7 +14,7 @@ metadata:
     iconClass: icon-other-unknown
     openshift.io/display-name: loki-openshift201
     openshift.io/documentation-url: https://github.com/bcdevops/devops-platform-workshops
-    openshift.io/long-description: This template provides a sample Grafana configuration for lab purposes.
+    openshift.io/long-description: This template provides a sample Loki configuration for lab purposes.
     openshift.io/provider-display-name: BCDevOps
     openshift.io/support-url: https://github.com/bcdevops/
     tags: monitoring,grafana,loki
@@ -29,6 +29,7 @@ objects:
       chart: loki-0.9.2
       heritage: Tiller
       release: ${LOKI_SERVICE_NAME}
+      template: loki-template
     name: ${LOKI_SERVICE_NAME}
   spec:
     ports:
@@ -50,8 +51,8 @@ objects:
       chart: loki-0.9.2
       heritage: Tiller
       release: ${LOKI_SERVICE_NAME}
+      template: loki-template
     name: ${LOKI_SERVICE_NAME}-headless
-    namespace: s4g19x-dkelsey-openshift201-may2019-dev
   spec:
     clusterIP: None
     ports:
@@ -73,6 +74,7 @@ objects:
       chart: loki-0.9.2
       heritage: Tiller
       release: ${LOKI_SERVICE_NAME}
+      template: loki-template
     name: ${LOKI_SERVICE_NAME}
   spec:
     podManagementPolicy: OrderedReady
@@ -152,6 +154,19 @@ objects:
           name: storage
     updateStrategy:
       type: RollingUpdate
+- apiVersion: v1
+  data:
+    loki.yaml: YXV0aF9lbmFibGVkOiBmYWxzZQpjaHVua19zdG9yZV9jb25maWc6CiAgbWF4X2xvb2tfYmFja19wZXJpb2Q6IDAKaW5nZXN0ZXI6CiAgY2h1bmtfYmxvY2tfc2l6ZTogMjYyMTQ0CiAgY2h1bmtfaWRsZV9wZXJpb2Q6IDE1bQogIGxpZmVjeWNsZXI6CiAgICByaW5nOgogICAgICBrdnN0b3JlOgogICAgICAgIHN0b3JlOiBpbm1lbW9yeQogICAgICByZXBsaWNhdGlvbl9mYWN0b3I6IDEKbGltaXRzX2NvbmZpZzoKICBlbmZvcmNlX21ldHJpY19uYW1lOiBmYWxzZQogIHJlamVjdF9vbGRfc2FtcGxlczogdHJ1ZQogIHJlamVjdF9vbGRfc2FtcGxlc19tYXhfYWdlOiAxNjhoCnNjaGVtYV9jb25maWc6CiAgY29uZmlnczoKICAtIGZyb206ICIyMDE4LTA0LTE1IgogICAgaW5kZXg6CiAgICAgIHBlcmlvZDogMTY4aAogICAgICBwcmVmaXg6IGluZGV4XwogICAgb2JqZWN0X3N0b3JlOiBmaWxlc3lzdGVtCiAgICBzY2hlbWE6IHY5CiAgICBzdG9yZTogYm9sdGRiCnNlcnZlcjoKICBodHRwX2xpc3Rlbl9wb3J0OiAzMTAwCnN0b3JhZ2VfY29uZmlnOgogIGJvbHRkYjoKICAgIGRpcmVjdG9yeTogL2RhdGEvbG9raS9pbmRleAogIGZpbGVzeXN0ZW06CiAgICBkaXJlY3Rvcnk6IC9kYXRhL2xva2kvY2h1bmtzCnRhYmxlX21hbmFnZXI6CiAgcmV0ZW50aW9uX2RlbGV0ZXNfZW5hYmxlZDogZmFsc2UKICByZXRlbnRpb25fcGVyaW9kOiAwCg==
+  kind: Secret
+  metadata:
+    annotations:
+    labels:
+      app: loki
+      chart: loki-0.9.2
+      heritage: Tiller
+      release: ${LOKI_SERVICE_NAME}
+    name: ${LOKI_SERVICE_NAME}
+  type: Opaque
 parameters:
 - description: The name of the Loki service to connect to.
   displayName: Loki Service Name
