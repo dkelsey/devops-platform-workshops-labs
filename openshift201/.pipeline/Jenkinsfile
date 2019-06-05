@@ -14,6 +14,7 @@ def ROUTE_SUBDOMAIN  = "pathfinder.gov.bc.ca"
 //Pipeline
 node {
 
+      stage ('Deploy to Dev'){
             parallel (
                'Deploy Loki to Dev'{
 
@@ -70,6 +71,7 @@ node {
                    }
                }
             )
+      }
  /*
             stage ('Deploy Loki to Dev'){
 
