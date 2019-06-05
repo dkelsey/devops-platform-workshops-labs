@@ -76,6 +76,11 @@ objects:
         - image: grafana/grafana@sha256:ced97851c89ca7d1e67a43aabbe05452e144a9bc9ffc63d2220dc2f37fdc1a71
           imagePullPolicy: IfNotPresent
           name: ${GRAFANA_SERVICE_NAME}
+          env:
+            - name: GF_PATHS_LOGS
+              values: /logs
+            - name: GF_LOG_MODE
+              value: file
           ports:
           - containerPort: 3000
             protocol: TCP
@@ -89,6 +94,17 @@ objects:
             name: volume-1em50
           - mountPath: /var/lib/grafana/dashboards/
             name: volume-2vu1x
+          - mountPath: /logs
+            name: logs
+        - name: promtail-containter
+          image: grafana/promtail:latest
+          args:
+          - -config.file=/etc/promtail/promtail.yaml
+          volumeMounts:
+            - name: logs
+              mountPath: /logs
+            - name: promtail-config
+              mountPath: /etc/promtail
         dnsPolicy: ClusterFirst
         restartPolicy: Always
         schedulerName: default-scheduler
@@ -107,6 +123,10 @@ objects:
             defaultMode: 420
             name: ${GRAFANA_SERVICE_NAME}-dashboard
           name: volume-2vu1x
+        - configMap:
+            defaultMode: 420
+            name: ${GRAFANA_SERVICE_NAME}-promtail-config
+          name: promtail-config
     test: false
     triggers:
     - type: ConfigChange
@@ -159,6 +179,30 @@ objects:
       name: ${GRAFANA_SERVICE_NAME}
       weight: 100
     wildcardPolicy: None
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: ${GRAFANA_SERVICE_NAME}-promtail-config
+    labels:
+      app: ${GRAFANA_SERVICE_NAME}
+  data:
+    promtail.yaml: |
+      server:
+        http_listen_port: 9080
+        grpc_listen_port: 0
+      positions:
+        filename: /tmp/positions.yaml
+      clients:
+        - url: http://${LOKI_SERVICE_NAME}:3100/api/prom/push
+      scrape_configs:
+        - job_name: system
+          entry_parser: raw
+          static_configs:
+            - targets:
+                - localhost
+              labels:
+                job: grafana
+                __path__: /logs/grafana.log
 - apiVersion: v1
   data:
     dashboard.yml: "apiVersion: 1\n\nproviders:\n  # <string> provider name\n- name:
