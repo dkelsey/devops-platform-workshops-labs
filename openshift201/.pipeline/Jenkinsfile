@@ -8,6 +8,7 @@ def LOKI_SERVICE  = "loki"
 def PROMETHEUS_SERVICE  = "prometheus"
 def PROMETHEUS_PVC_SIZE  = "2Gi"
 def GRAFANA_SERVICE  = "grafana"
+def ROUTE_SUBDOMAIN  = "pathfinder.gov.bc.ca"
 
 
 //Pipeline
