@@ -24,6 +24,7 @@ node {
                         }
                       }
                 }
+                input message: 'Want to deploy to PROD?', ok: 'Hang Tight?'
             }
             stage ('Deploy Loki to Prod'){
                 dir ('simple_pipeline') {
