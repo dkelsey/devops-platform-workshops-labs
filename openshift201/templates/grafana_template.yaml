@@ -111,6 +111,8 @@ objects:
         securityContext: {}
         terminationGracePeriodSeconds: 30
         volumes:
+        - name: logs
+          emptyDir: {}
         - configMap:
             defaultMode: 420
             name: ${GRAFANA_SERVICE_NAME}-dashboard-provider
