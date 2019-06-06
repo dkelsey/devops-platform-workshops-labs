@@ -59,7 +59,7 @@ node {
                        sh "oc process -f openshift201/templates/grafana_template.yaml -p  GRAFANA_SERVICE_NAME=${GRAFANA_SERVICE} -p LOKI_SERVICE_NAME=${LOKI_SERVICE} -p  PROMETHEUS_SERVICE_NAME=${PROMETHEUS_SERVICE} -p ROUTE_SUBDOMAIN=${ROUTE_SUBDOMAIN} -p NAMESPACE=${DEV_NAMESPACE} | oc apply -f - -n ${DEV_NAMESPACE}"
 
                           sh "echo Wait for service to be up"
-                       timeout (time: 180, unit: 'SECONDS'){
+                       timeout (time: 360, unit: 'SECONDS'){
                            openshift.withCluster() {
                            openshift.withProject("${DEV_NAMESPACE}") {
                                def dc = openshift.selector('dc', "${GRAFANA_SERVICE}")
